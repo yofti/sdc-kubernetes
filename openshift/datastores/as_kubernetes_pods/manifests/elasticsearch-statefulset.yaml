@@ -1,0 +1,73 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: sysdigcloud-elasticsearch # Elasticsearch node number
+  labels:
+    app: sysdigcloud
+spec:
+  serviceName: elasticsearch
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sysdigcloud
+  template:
+    metadata:
+      labels:
+        app: sysdigcloud
+        role: elasticsearch
+    spec:
+      containers:
+        - image: quay.io/sysdig/elasticsearch:5.1.1
+          name: elasticsearch
+          # https://www.elastic.co/blog/bootstrap_checks_annoying_instead_of_devastating
+          # Elasticsearch team decided to force everybody to run ES5 with the following sysctl option:
+          # sysctl -w vm.max_map_count=262144
+          # If you choose to run the container in privileged mode the container will automatically configured the system
+          # parameter and start elasticsearch as elasticsearch user.
+          # if you choose to run the container not in privileged mode make sure to configure the vm.max_map_count
+          # on all the servers of your cluster
+          securityContext:
+            privileged: true
+          env:
+            - name: ELASTICSEARCH_SERVICE
+              value: sysdigcloud-elasticsearch
+            - name: ELASTICSEARCH_GOSSIP_NODES_NUM
+              value: "2"
+            - name: ELASTICSEARCH_CLUSTER_NAME
+              value: sysdigcloud
+            - name: ES_JAVA_OPTS
+              valueFrom:
+                configMapKeyRef:
+                  name: sysdigcloud-config
+                  key: elasticsearch.jvm.options
+          volumeMounts:
+            - mountPath: /usr/share/elasticsearch/data
+              name: data
+      imagePullSecrets:
+        - name: sysdigcloud-pull-secret
+      #volumes:
+        # Uncomment this for emptyDir volumes
+        #- name: data
+        #  emptyDir: {}
+        #- name: data
+        #  persistentVolumeClaim:
+        #   claimName: sysdigcloud-es-pv-claim  
+        # Uncomment this for GCE Disk
+        # - name: data
+        #   gcePersistentDisk:
+        #     pdName: <volume-name>
+        #     fsType: ext4
+        # Uncomment this for AWS EBS
+        #- name: data
+        #  awsElasticBlockStore:
+        #    volumeID: vol-01eb976bf5f55c33b
+        #    fsType: ext4
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      storageClassName: aws-gp2
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 5Gi

@@ -1,0 +1,141 @@
+# Headless service for stable DNS entries of StatefulSet members.
+# write to host sysdigcloud-mysql-0.sysdigcloud-mysql. aka the master.
+apiVersion: v1
+kind: Service
+metadata:
+  name: sysdigcloud-mysql
+  namespace: sysdigcloud
+  labels:
+    app: sysdigcloud
+    role: mysql
+spec:
+  clusterIP: None
+  ports:
+    - port: 3306
+  selector:
+    app: sysdigcloud
+    role: mysql
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: sysdigcloud-mysql
+  namespace: sysdigcloud
+  labels:
+    app: sysdigcloud
+spec:
+  serviceName: sysdigcloud-mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sysdigcloud
+  template:
+    metadata:
+      labels:
+        app: sysdigcloud
+        role: mysql
+    spec:
+      initContainers:
+      - name: init-mysql
+        image: mysql:5.7
+        command:
+        - bash
+        - "-c"
+        - |
+          set -ex
+          echo [mysqld] > /mnt/conf.d/server-id.cnf
+          echo server-id=100 >> /mnt/conf.d/server-id.cnf
+          # Copy appropriate conf.d files from config-map to emptyDir.
+          cp /mnt/config-map/master.cnf /mnt/conf.d/
+        volumeMounts:
+        - name: mysql-config
+          mountPath: /mnt/conf.d
+        - name: config-map
+          mountPath: /mnt/config-map      
+      containers:
+      - name: mysql
+        image: mysql:5.7
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: sysdigcloud-mysql-config
+              key: mysql.root.password
+        - name: MYSQL_USER
+          valueFrom:
+            configMapKeyRef:
+              name: sysdigcloud-mysql-config
+              key: mysql.user
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: sysdigcloud-mysql-config
+              key: mysql.password
+        - name: MYSQL_DATABASE
+          value: draios
+        ports:
+        - name: mysql
+          containerPort: 3306
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/mysql
+          subPath: mysql
+        - name: mysql-config
+          mountPath: /etc/mysql/conf.d
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+        livenessProbe:
+          exec:
+            command: ["mysqladmin", "ping"]
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            # Check we can execute queries over TCP (skip-networking is off).
+            command: ["mysql", "-u", "root", "-ppassword", "-h", "127.0.0.1", "-e", "SELECT 1"]
+          initialDelaySeconds: 5
+          periodSeconds: 2
+          timeoutSeconds: 1
+      - name: xtrabackup
+        image: gcr.io/google-samples/xtrabackup:1.0
+        ports:
+        - name: xtrabackup
+          containerPort: 3307
+        command:
+        - bash
+        - "-c"
+        - |
+          set -ex
+          cd /var/lib/mysql
+
+          # Start a server to send backups when requested by peers.
+          exec ncat --listen --keep-open --send-only --max-conns=1 3307 -c \
+            "xtrabackup --backup --slave-info --stream=xbstream --host=127.0.0.1 --user=root --password=password"
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/mysql
+          subPath: mysql
+        - name: mysql-config
+          mountPath: /etc/mysql/conf.d
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+      volumes:
+      - name: mysql-config
+        emptyDir: {}
+      - name: config-map
+        configMap:
+          name: sysdigcloud-mysql-config
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      storageClassName: aws-gp2-multi-az
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 2Gi

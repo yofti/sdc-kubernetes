@@ -1,0 +1,257 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sysdigcloud-config
+data:
+  redis.endpoint: sysdigcloud-redis
+  redis.password: ""
+  mysql.endpoint: sysdigcloud-mysql
+  # Required: MySQL user
+  mysql.user: admin
+  # Required: MySQL password
+  mysql.password: password
+  mysql.root.password: password
+  cassandra.endpoint: sysdigcloud-cassandra
+  # Optional: enable or disable cassandra authentication and authorization in sysdigcloud cassandra image,
+  # if you want to enable it, make sure to follow the support guide in the official sysdigcloud documentation
+  cassandra.secure: "false"
+  # Optional: Enable cassandra internodes and client encryption
+  cassandra.ssl.enabled: "false"
+  # Optional: Specify Cassandra cipher suites to use. This option is available only when using external cassandra clusters.
+  # Comma separated value. Example: "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA"
+  cassandra.ssl.ciphers: ""
+  # Optional: Cassandra user
+  cassandra.user: ""
+  # Optional: Cassandra password
+  cassandra.password: ""
+  # Required: CQL native clients port
+  cassandra.port: "9042"
+  # Optional: Cassandra replication factor to use. This parameter will just be applied during the
+  # keyspace creation, no changes are done to an already existing keyspace
+  cassandra.replication.factor: "3"
+  # Optional: Cassandra JVM options, when Cassandra is started as a Kubernetes service using
+  # the provided manifests. For heavy load environments you'll need to tweak the memory or garbage
+  # collection settings
+  cassandra.jvm.options: ""
+  # Required: Redis endpoint DNS/IP. If Redis is deployed as a Kubernetes service, 
+  # this will be the service name. If using an external database, put the proper address
+  elasticsearch.url: http://sysdigcloud-elasticsearch
+  # Optional: Elasticsearch JVM options, when Elasticsearch is started as a Kubernetes service using
+  # the provided manifests. For heavy load environments you'll need to tweak the memory or garbage
+  # collection settings
+  elasticsearch.jvm.options: ""
+  # Optional: SMTP server address, needed for Sysdig Cloud to send email notifications
+  smtp.server: ""
+  # Optional: SMTP server port
+  smtp.server.port: "25"
+  # Optional: SMTP user (leave empty if your server doesn't require authentication)
+  smtp.user: ""
+  # Optional: SMTP password (leave empty if your server doesn't require authentication)
+  smtp.password: ""
+  # Optional: SMTP Secure Connection options
+  smtp.tls: "false"
+  smtp.ssl: "false"
+  # Optional: From Header used for email notifications
+  smtp.from.address: ""
+  # Required: Collector service endpoint DNS/IP. If the collector needs to be reachable outside the Kubernetes
+  # cluster, this will likely need to be set to the address of the Kubernetes nodes (if using a NodePort service) or the
+  # cloud load balancer created by the service (if using a LoadBalancer service). Otherwise, it can be left
+  # to the default value and the collector will just be routable within the Kubernetes cluster.
+  collector.endpoint: sysdigcloud-collector
+  # Required: Collector port. If using a LoadBalancer service for the collector, the port can be left as the default.
+  # If using a NodePort service, this will need to be set to the dynamic port allocated by Kubernetes on the nodes
+  # (obtained via kubectl describe service sysdigcloud-collector)
+  collector.port: "6443"
+  # Required: Api service https URL. If the api needs to be reachable outside the Kubernetes
+  # cluster, this will likely need to be set to the address of the Kubernetes nodes and the dynamic port allocated
+  # by Kubernetes (if using a NodePort service) or the cloud load balancer created by the service (if using a LoadBalancer service). 
+  # Otherwise, it can be left to the default value and the api will just be routable within the Kubernetes cluster.
+  api.url: https://sysdigcloud-api:443
+  # Required: Sysdig Cloud default user. This will be used for the initial login in the web interface
+  sysdigcloud.default.user: test@sysdig.com
+  # Required: Sysdig Cloud default user password
+  sysdigcloud.default.user.password: test
+  # Optional: forward application logs to stdout
+  sysdigcloud.logging.stdout: "false"
+  # Optional: Sysdig Cloud application JVM options. For heavy load environments you'll need to tweak 
+  # the memory or garbage collection settings
+  sysdigcloud.jvm.options: ""
+  # Required: Sysdig Cloud license
+  sysdigcloud.license: ""
+  # Optional: OAuth allowed domains (comma separated list of domains)
+  sysdigcloud.oauth.allowed.domains.list: ""
+  # Optional: Sysdig Cloud Google OAuth Client ID
+  sysdigcloud.google.oauth.client.id: ""
+  # Optional: Sysdig Cloud Google OAuth Client Secret
+  sysdigcloud.google.oauth.client.secret: ""
+  # Required: enable or disable Sysdig Cloud LDAP integration
+  sysdigcloud.ldap.enabled: "false"
+  # Optional: LDAP server endpoint (eg: ldaps://1.2.3.4:636)
+  sysdigcloud.ldap.endpoint: ""
+  # Optional: LDAP DN manager (eg: cn=servicer_acccount,ou=Service accounts,dc=demo,dc=com)
+  sysdigcloud.ldap.manager.dn: ""
+  # Optional: LDAP Manager password
+  sysdigcloud.ldap.manager.password: ""
+  # Optional: LDAP root DN
+  sysdigcloud.ldap.root.dn: ""
+  # Optional: LDAP user search base
+  # If you specify a relative DN (from the root DN), Sysdig Cloud will further narrow down searches to the sub-tree.
+  sysdigcloud.ldap.user.search.base: ""
+  # Optional: LDAP user search filter (eg: (\&(objectClass=organizationalPerson)(sAMAccountName={0})).
+  # This field determines the query to be run to identify the user record. The query is almost always uid={0} as per defined in RFC 2798.
+  # NB. Escape special characters like &
+  sysdigcloud.ldap.user.search.filter: ""
+  # Optional: Group search base (eg: ou=Organization,ou=Users)
+  # This field determines the query to be run to identify the organizational unit that contains groups.
+  sysdigcloud.ldap.group.search.base: ""
+  # Optional: Group search filter (eg: cn=sysdigcloud)
+  # This field is used to determine if a named group exists. If you know your LDAP server only stores group information
+  # in one specific object class, then you can improve group search performance by restricting the filter to just the required object class.
+  sysdigcloud.ldap.group.search.filter: ""
+  # Optional: Group membership filter (eg: member={0})
+  # The group membership filter field controls the search filter that is used to determine group membership.
+  # You are normally safe leaving this field unchanged, the default value ( | (member={0}) (uniqueMember={0}) (memberUid={1})) will be used.
+  sysdigcloud.ldap.group.membership.filter: ""
+  # Optional: Store Sysdig captures using Cassandra instead of S3
+  # NB. This affects cassandra storage
+  sysdigcloud.captures.cassandra.storage: "false"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sysdigcloud-mysql-config
+  labels:
+    app: sysdigcloud
+data:
+  # Required: MySQL endpoint DNS/IP. If MySQL is deployed as a Kubernetes service, 
+  # this will be the service name. If using an external database, put the proper address
+  mysql.endpoint: sysdigcloud-mysql
+  # Required: MySQL user
+  mysql.user: admin
+  # Required: MySQL password
+  mysql.password: password
+  mysql.root.password: password
+  master.cnf: |-
+    [client]
+    port   = 3306
+    socket   = /var/run/mysqld/mysqld.sock
+    default-character-set=utf8
+
+    [mysql]
+    default-character-set=utf8
+    [mysqld_safe]
+    pid-file = /var/run/mysqld/mysqld.pid
+    socket   = /var/run/mysqld/mysqld.sock
+    nice   = 0
+    [mysqld]
+    user   = mysql
+    pid-file = /var/run/mysqld/mysqld.pid
+    socket   = /var/run/mysqld/mysqld.sock
+    port   = 3306
+    basedir    = /usr
+    datadir    = /var/lib/mysql
+    tmpdir   = /tmp
+    lc-messages-dir  = /usr/share/mysql
+    explicit_defaults_for_timestamp
+    collation-server = utf8_unicode_ci
+    init-connect='SET NAMES utf8'
+    character-set-server = utf8
+    log-error  = /var/log/mysql/error.log
+    # Recommended in standard MySQL setup
+    sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
+    # Disabling symbolic-links is recommended to prevent assorted security risks
+    symbolic-links=0
+    # Replicate to slaves
+    log-bin=sysdigcloud-mysql-0-bin
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sysdigcloud-mysql-config-slave
+  labels:
+    app: sysdigcloud-mysql-slave
+data:
+  # Required: MySQL endpoint DNS/IP. If MySQL is deployed as a Kubernetes service, 
+  # this will be the service name. If using an external database, put the proper address
+  mysql.endpoint: sysdigcloud-mysql
+  # Required: MySQL user
+  mysql.user: admin
+  # Required: MySQL password
+  mysql.password: password
+  mysql.root.password: password
+  slave.cnf: |-
+    [client]
+    port   = 3306
+    socket   = /var/run/mysqld/mysqld.sock
+    default-character-set=utf8
+
+    [mysql]
+    default-character-set=utf8
+    [mysqld_safe]
+    pid-file = /var/run/mysqld/mysqld.pid
+    socket   = /var/run/mysqld/mysqld.sock
+    nice   = 0
+    [mysqld]
+    user   = mysql
+    pid-file = /var/run/mysqld/mysqld.pid
+    socket   = /var/run/mysqld/mysqld.sock
+    port   = 3306
+    basedir    = /usr
+    datadir    = /var/lib/mysql
+    tmpdir   = /tmp
+    lc-messages-dir  = /usr/share/mysql
+    explicit_defaults_for_timestamp
+    collation-server = utf8_unicode_ci
+    init-connect='SET NAMES utf8'
+    character-set-server = utf8
+    log-error  = /var/log/mysql/error.log
+    # Recommended in standard MySQL setup
+    sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
+    # Disabling symbolic-links is recommended to prevent assorted security risks
+    symbolic-links=0
+    # Writes from master only
+    super-read-only
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sysdigcloud-redis-config
+  labels:
+    app: sysdigcloud-redis
+data:
+  redis.password: ""
+  redis.conf: |+
+    cluster-enabled no
+    cluster-require-full-coverage no
+    cluster-node-timeout 15000
+    cluster-config-file /data/nodes.conf
+    cluster-migration-barrier 1
+    appendonly yes
+    protected-mode no
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sysdigcloud-redis-config-slave
+  labels:
+    app: sysdigcloud-redis-slave
+data:
+  redis.password: ""
+  redis.conf: |+
+    cluster-enabled no
+    cluster-require-full-coverage no
+    cluster-node-timeout 15000
+    cluster-config-file /data/nodes.conf
+    cluster-migration-barrier 1
+    appendonly yes
+    protected-mode no
+    slaveof 10.2.31.150 6379
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sysdigcloud-pull-secret
+  namespace: sysdigcloud
+data:
+  .dockerconfigjson: 
+type: kubernetes.io/dockerconfigjson

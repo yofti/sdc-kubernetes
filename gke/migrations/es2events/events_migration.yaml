@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: sysdigcloud
+    role: migration-script
+  name: sysdigcloud-migration
+spec:
+  containers:
+  - env:
+    - name: K8S_MIGRATION
+      value: "true"
+    - name: MYSQL_ENDPOINT
+      valueFrom:
+        configMapKeyRef:
+          key: mysql.endpoint
+          name: sysdigcloud-config
+    - name: MYSQL_USER
+      valueFrom:
+        configMapKeyRef:
+          key: mysql.user
+          name: sysdigcloud-config
+    - name: MYSQL_PASSWORD
+      valueFrom:
+        configMapKeyRef:
+          key: mysql.password
+          name: sysdigcloud-config
+    - name: ES_URL
+      valueFrom:
+        configMapKeyRef:
+          key: elasticsearch.url
+          name: sysdigcloud-config
+    image: sysdig/onprem_migration:events
+    name: sysdigcloud-migration
+  restartPolicy: Never

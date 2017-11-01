@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sysdigcloud-redis
+  namespace: sysdigcloud
+  labels:
+    app: sysdigcloud
+    role: redis
+spec:
+  clusterIP: None
+  ports:
+  - port: 6379
+    targetPort: 6379
+    name: client
+  - port: 16379
+    targetPort: 16379
+    name: gossip
+  selector:
+    app: sysdigcloud
+    role: redis
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: sysdigcloud-redis
+  namespace: sysdigcloud
+  labels:
+    app: sysdigcloud
+spec:
+  serviceName: redis
+  replicas: 3
+  selector:
+     matchLabels:
+        app: sysdigcloud
+  template:
+    metadata:
+      labels:
+        app: sysdigcloud
+        role: redis
+    spec:
+      containers:
+      - name: redis-cluster
+        image: yofti/redis-cluster:latest
+        env:
+          - name: REDIS_PASSWORD
+            valueFrom:
+              configMapKeyRef:
+                name: sysdigcloud-config
+                key: redis.password
+        ports:
+        - containerPort: 6379
+          name: client
+        - containerPort: 16379
+          name: gossip
+        command: ["redis-server"]
+        args: ["/conf/redis.conf"]
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "redis-cli -h $(hostname) ping"
+          initialDelaySeconds: 15
+          timeoutSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "redis-cli -h $(hostname) ping"
+          initialDelaySeconds: 20
+          periodSeconds: 3
+        volumeMounts:
+        - name: redis-config
+          mountPath: /conf
+          readOnly: false
+        - name: data
+          mountPath: /data
+          readOnly: false
+      volumes:
+      - name: redis-config
+        configMap:
+          name: sysdigcloud-redis-config
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      storageClassName: aws-gp2-multi-az
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi

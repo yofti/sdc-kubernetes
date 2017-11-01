@@ -1,0 +1,128 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sysdigcloud-mysql-config
+  labels:
+    app: sysdigcloud
+data:
+  my.cnf: |-
+    [client]
+    port   = 3306
+    socket   = /var/run/mysqld/mysqld.sock
+    default-character-set=utf8
+
+    [mysql]
+    default-character-set=utf8
+    [mysqld_safe]
+    pid-file = /var/run/mysqld/mysqld.pid
+    socket   = /var/run/mysqld/mysqld.sock
+    nice   = 0
+    [mysqld]
+    user   = mysql
+    pid-file = /var/run/mysqld/mysqld.pid
+    socket   = /var/run/mysqld/mysqld.sock
+    port   = 3306
+    basedir    = /usr
+    datadir    = /var/lib/mysql
+    tmpdir   = /tmp
+    lc-messages-dir  = /usr/share/mysql
+    explicit_defaults_for_timestamp
+    collation-server = utf8_unicode_ci
+    init-connect='SET NAMES utf8'
+    character-set-server = utf8
+    log-error  = /var/log/mysql/error.log
+    # Recommended in standard MySQL setup
+    sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
+    # Disabling symbolic-links is recommended to prevent assorted security risks
+    symbolic-links=0
+    !includedir /etc/mysql/conf.d/
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sysdigcloud-mysql
+  labels:
+    app: sysdigcloud
+    role: mysql
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: sysdigcloud
+    role: mysql
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: sysdigcloud-mysql
+  labels:
+    app: sysdigcloud
+spec:
+  serviceName: mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sysdigcloud
+  template:
+    metadata:
+      labels:
+        app: sysdigcloud
+        role: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:5.6.34
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: sysdigcloud-config
+                  key: mysql.password
+            - name: MYSQL_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: sysdigcloud-config
+                  key: mysql.user
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: sysdigcloud-config
+                  key: mysql.password
+            - name: MYSQL_DATABASE
+              value: draios
+          volumeMounts:
+            - name: mysql-config
+              mountPath: /etc/mysql/my.cnf
+              subPath: my.cnf
+            - name: data
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-config
+          configMap:
+            name: sysdigcloud-mysql-config
+      #  - name: data
+      #    persistentVolumeClaim:
+      #     claimName: sysdigcloud-sql-pv-claim
+        # Uncomment this for emptyDir volumes
+        #- name: data
+        #  emptyDir: {}
+        # Uncomment this for a pre-existing GCE Disk
+        # - name: data
+        #   gcePersistentDisk:
+        #     pdName: <volume-name>
+        #     fsType: ext4
+        # Uncomment this for a pre-existing AWS EBS
+        #- name: data
+        #  awsElasticBlockStore:
+        #    volumeID: vol-0a8b0fd8dc9060799
+        #    fsType: ext4
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        storageClassName: aws-gp2
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 5Gi
+  
