@@ -25,7 +25,6 @@ apiVersion: "apps/v1beta1"
 kind: StatefulSet
 metadata:
   name: sdc-cassandra
-  namespace: sysdigcloud
   labels:
     app: sysdigcloud
     role: cassandra
@@ -41,7 +40,7 @@ spec:
       containers:
       - name: cassandra
         #image: gcr.io/google-samples/cassandra:v12
-        image: quay.io/sysdig/cassandra:2.1.15.0
+        image: cassandra:2.2
         #imagePullPolicy: Always
         ports:
         - containerPort: 7000
@@ -55,10 +54,10 @@ spec:
         resources:
           limits:
             cpu: "500m"
-            memory: 2Gi
+            memory: 1Gi
           requests:
            cpu: "500m"
-           memory: 2Gi
+           memory: 1Gi
         securityContext:
           capabilities:
             add:
@@ -68,12 +67,14 @@ spec:
             exec:
               command: ["/bin/sh", "-c", "nodetool drain"]
         env:
-          #- name: CASSANDRA_SEEDS
-          #  value: "sdc-cassandra-0.sdc-cassandra.sysdigcloud.svc.cluster.local"
-          - name: CASSANDRA_SERVICE
-            value: sdc-cassandra
-          - name: CASSANDRA_SEED_PROVIDER
-            value: "io.k8s.cassandra.KubernetesSeedProvider"
+          - name: MAX_HEAP_SIZE
+            value: 512M
+          - name: HEAP_NEWSIZE
+            value: 100M
+          #- name: CASSANDRA_NUM_SEEDS
+          #  value: "2"
+          - name: CASSANDRA_SEEDS
+            value: "sdc-cassandra-0.sdc-cassandra.sysdigcloud.svc.cluster.local"
           - name: CASSANDRA_CLUSTER_NAME
             value: "sysdigcloud"
           - name: JVM_EXTRA_OPTS
@@ -107,11 +108,15 @@ spec:
             - echo
           initialDelaySeconds: 15
           timeoutSeconds: 5
+        # These volume mounts are persistent. They are like inline claims,
+        # but not exactly because the names need to match exactly one of
+        # the stateful pod volumes.
         volumeMounts:
         - name: data
           mountPath: /var/lib/cassandra
-      imagePullSecrets:
-      - name: sysdigcloud-pull-secret
+  # These are converted to volume claims by the controller
+  # and mounted at the paths mentioned above.
+  # do not use these in production until ssd GCEPersistentDisk or other ssd pd
   volumeClaimTemplates:
   - metadata:
       name: data
@@ -119,5 +124,5 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 10Gi
-      storageClassName: aws-gp2-multi-az
+          storage: 1Gi
+      storageClassName: gce-pd

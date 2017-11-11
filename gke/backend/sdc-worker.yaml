@@ -1,24 +1,7 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: sdc-api
-  labels:
-    app: sysdigcloud
-    role: api
-spec:
-  type: LoadBalancer
-  ports:
-    - port: 443
-      name: secure-api
-      targetPort: 443
-  selector:
-    app: sysdigcloud
-    role: api
----
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: sdc-api
+  name: sysdigcloud-worker
   namespace: sysdigcloud
 spec:
   replicas: 1
@@ -26,10 +9,10 @@ spec:
     metadata:
       labels:
         app: sysdigcloud
-        role: api
+        role: worker
     spec:
       containers:
-        - name: api
+        - name: worker
           image: quay.io/sysdig/sysdigcloud-backend:658
           volumeMounts:
             - name: logs
@@ -46,9 +29,9 @@ spec:
             #  mountPath: /opt/kubernets_secrets
           env:
             - name: ROLES
-              value: api
+              value: worker
             - name: LOG_ROLE
-              value: api
+              value: worker
             - name: API_ENDPOINT
               valueFrom:
                 configMapKeyRef:

@@ -1,8 +1,9 @@
 #!/bin/bash
 kubectl delete -f etc/sdc-config.yaml 
+kubectl delete secret sysdigcloud-ssl-secret -n sysdigcloud
 
-kubectl delete -f backend/sdc-api.yaml -f backend/sdc-collector.yaml -f backend/sdc-worker.yaml 
-kubectl delete secret sysdigcloud-ssl-secret 
+kubectl delete -R -f backend/
+kubectl delete -R -f frontend/
 
 kubectl delete -f datastores/sdc-mysql-master.yaml &
 kubectl delete -f datastores/sdc-redis.yaml &
@@ -10,5 +11,5 @@ kubectl delete -f datastores/sdc-cassandra.yaml &
 kubectl delete -f datastores/sdc-elasticsearch.yaml &
 kubectl delete -f datastores/sdc-mysql-slave.yaml &
 
-#you will delete PVC's if you remove namespace
-#kubectl delete namespace sysdigcloud 
+#NB: deleting namespace will delete PVCs
+kubectl delete namespace sysdigcloud 

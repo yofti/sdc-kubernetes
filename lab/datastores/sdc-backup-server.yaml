@@ -1,0 +1,31 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: sdc-backup-server
+  namespace: sysdigcloud
+  labels:
+    name: sdc-backup-server
+spec:
+  containers:
+    - name: sdc-backup-server
+      image: yofti/ubuntu:latest
+      imagePullPolicy: Always
+      volumeMounts:
+      - mountPath: "/mnt/sdc-cassandra-0"
+        name: node0
+      - mountPath: "/mnt/sdc-cassandra-1"
+        name: node1  
+      - mountPath: "/mnt/sdc-cassandra-2"
+        name: node2  
+      command: [ "/bin/bash", "-c", "--" ]
+      args: [ "while true; do sleep 30; done;" ]
+  volumes:
+    - name: node0
+      persistentVolumeClaim:
+       claimName: data-sdc-cassandra-0
+    - name: node1
+      persistentVolumeClaim:
+       claimName: data-sdc-cassandra-1
+    - name: node2
+      persistentVolumeClaim:
+       claimName: data-sdc-cassandra-2

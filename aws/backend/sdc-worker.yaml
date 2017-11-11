@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: sysdigcloud-worker
+  name: sdc-worker
   namespace: sysdigcloud
 spec:
   replicas: 1

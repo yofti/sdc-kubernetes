@@ -163,7 +163,7 @@ spec:
   - metadata:
       name: data
     spec:
-      storageClassName: aws-gp2-multi-az
+      storageClassName: gce-pd
       accessModes: ["ReadWriteOnce"]
       resources:
         requests:

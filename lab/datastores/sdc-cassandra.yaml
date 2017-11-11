@@ -68,12 +68,8 @@ spec:
             exec:
               command: ["/bin/sh", "-c", "nodetool drain"]
         env:
-          #- name: CASSANDRA_SEEDS
-          #  value: "sdc-cassandra-0.sdc-cassandra.sysdigcloud.svc.cluster.local"
-          - name: CASSANDRA_SERVICE
-            value: sdc-cassandra
-          - name: CASSANDRA_SEED_PROVIDER
-            value: "io.k8s.cassandra.KubernetesSeedProvider"
+          - name: CASSANDRA_SEEDS
+            value: "sdc-cassandra-0.sdc-cassandra.sysdigcloud.svc.cluster.local"
           - name: CASSANDRA_CLUSTER_NAME
             value: "sysdigcloud"
           - name: JVM_EXTRA_OPTS
@@ -107,11 +103,18 @@ spec:
             - echo
           initialDelaySeconds: 15
           timeoutSeconds: 5
+        # These volume mounts are persistent. They are like inline claims,
+        # but not exactly because the names need to match exactly one of
+        # the stateful pod volumes.
         volumeMounts:
         - name: data
           mountPath: /var/lib/cassandra
+
       imagePullSecrets:
       - name: sysdigcloud-pull-secret
+  # These are converted to volume claims by the controller
+  # and mounted at the paths mentioned above.
+  # do not use these in production until ssd GCEPersistentDisk or other ssd pd
   volumeClaimTemplates:
   - metadata:
       name: data
@@ -120,4 +123,4 @@ spec:
       resources:
         requests:
           storage: 10Gi
-      storageClassName: aws-gp2-multi-az
+      storageClassName: gce-pd

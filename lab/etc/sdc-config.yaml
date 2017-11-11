@@ -18,10 +18,8 @@ data:
   #endpoints
   elasticsearch.url: http://sdc-elasticsearch
   redis.endpoint: sdc-redis
-  redis.read.endpoint: sdc-redis-slave
   cassandra.endpoint: sdc-cassandra
   mysql.endpoint: sdc-mysql
-  mysql.read.endpoint: sdc-mysql-slave
   collector.endpoint: sdc-collector
   collector.port: "6443"
   api.url: https://sdc-api:443
@@ -31,9 +29,9 @@ data:
   cassandra.user: ""
   cassandra.password: ""
   redis.password: ""
-  mysql.user: admin
-  mysql.password: password
-  mysql.root.password: password
+  mysql.user: proxyuser
+  mysql.password: jcHcDOFMbvFt70ef
+  mysql.root.password: jcHcDOFMbvFt70ef
   #jvm options
   cassandra.jvm.options: ""
   elasticsearch.jvm.options: ""
@@ -69,98 +67,6 @@ data:
   sysdigcloud.ldap.group.search.base: ""
   sysdigcloud.ldap.group.search.filter: ""
   sysdigcloud.ldap.group.membership.filter: ""
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: sysdigcloud-mysql-config
-  namespace: sysdigcloud
-  labels:
-    app: sysdigcloud
-    role: sysdigcloud
-data:
-  mysql.endpoint: sysdigcloud-mysql
-  mysql.user: admin
-  mysql.password: password
-  mysql.root.password: password
-  mysql.replication.user: repluser
-  mysql.replication.password: password
-  master.cnf: |-
-    [client]
-    port   = 3306
-    socket   = /var/run/mysqld/mysqld.sock
-    default-character-set=utf8
-
-    [mysql]
-    default-character-set=utf8
-    [mysqld_safe]
-    pid-file = /var/run/mysqld/mysqld.pid
-    socket   = /var/run/mysqld/mysqld.sock
-    nice   = 0
-    [mysqld]
-    user   = mysql
-    pid-file = /var/run/mysqld/mysqld.pid
-    socket   = /var/run/mysqld/mysqld.sock
-    port   = 3306
-    basedir    = /usr
-    datadir    = /var/lib/mysql
-    tmpdir   = /tmp
-    lc-messages-dir  = /usr/share/mysql
-    explicit_defaults_for_timestamp
-    collation-server = utf8_unicode_ci
-    init-connect='SET NAMES utf8'
-    character-set-server = utf8
-    log-error  = /var/log/mysql/error.log
-    sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
-    symbolic-links=0
-    # Replicate to slaves
-    log-bin=sdc-mysql-0-bin
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: sysdigcloud-mysql-config-slave
-  namespace: sysdigcloud
-  labels:
-    app: sysdigcloud-mysql-slave
-    role: mysql-slave
-data:
-  mysql.endpoint: sdc-mysql
-  mysql.user: admin
-  mysql.password: password
-  mysql.root.password: password
-  mysql.replication.user: repluser
-  mysql.replication.password: password
-  slave.cnf: |-
-    [client]
-    port   = 3306
-    socket   = /var/run/mysqld/mysqld.sock
-    default-character-set=utf8
-
-    [mysql]
-    default-character-set=utf8
-    [mysqld_safe]
-    pid-file = /var/run/mysqld/mysqld.pid
-    socket   = /var/run/mysqld/mysqld.sock
-    nice   = 0
-    [mysqld]
-    user   = mysql
-    pid-file = /var/run/mysqld/mysqld.pid
-    socket   = /var/run/mysqld/mysqld.sock
-    port   = 3306
-    basedir    = /usr
-    datadir    = /var/lib/mysql
-    tmpdir   = /tmp
-    lc-messages-dir  = /usr/share/mysql
-    explicit_defaults_for_timestamp
-    collation-server = utf8_unicode_ci
-    init-connect='SET NAMES utf8'
-    character-set-server = utf8
-    log-error  = /var/log/mysql/error.log
-    sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
-    symbolic-links=0
-    # writes from master only
-    super-read-only
 ---
 apiVersion: v1
 kind: ConfigMap

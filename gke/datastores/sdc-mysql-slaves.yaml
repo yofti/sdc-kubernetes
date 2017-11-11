@@ -26,7 +26,7 @@ metadata:
     role: mysql-slave
 spec:
   serviceName: sdc-mysql-slave
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: sysdigcloud
@@ -58,6 +58,7 @@ spec:
           mountPath: /mnt/conf.d
         - name: config-map
           mountPath: /mnt/config-map
+          
       - name: clone-mysql
         image: gcr.io/google-samples/xtrabackup:1.0
         env:
@@ -242,7 +243,7 @@ spec:
   - metadata:
       name: data
     spec:
-      storageClassName: aws-gp2-multi-az
+      storageClassName: gce-pd
       accessModes: ["ReadWriteOnce"]
       resources:
         requests:

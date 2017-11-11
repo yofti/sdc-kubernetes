@@ -18,10 +18,8 @@ data:
   #endpoints
   elasticsearch.url: http://sdc-elasticsearch
   redis.endpoint: sdc-redis
-  redis.read.endpoint: sdc-redis-slave
   cassandra.endpoint: sdc-cassandra
   mysql.endpoint: sdc-mysql
-  mysql.read.endpoint: sdc-mysql-slave
   collector.endpoint: sdc-collector
   collector.port: "6443"
   api.url: https://sdc-api:443
@@ -77,10 +75,13 @@ metadata:
   namespace: sysdigcloud
   labels:
     app: sysdigcloud
-    role: sysdigcloud
 data:
-  mysql.endpoint: sysdigcloud-mysql
+  # Required: MySQL endpoint DNS/IP. If MySQL is deployed as a Kubernetes service, 
+  # this will be the service name. If using an external database, put the proper address
+  mysql.endpoint: sdc-mysql
+  # Required: MySQL user
   mysql.user: admin
+  # Required: MySQL password
   mysql.password: password
   mysql.root.password: password
   mysql.replication.user: repluser
@@ -111,10 +112,12 @@ data:
     init-connect='SET NAMES utf8'
     character-set-server = utf8
     log-error  = /var/log/mysql/error.log
+    # Recommended in standard MySQL setup
     sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
+    # Disabling symbolic-links is recommended to prevent assorted security risks
     symbolic-links=0
     # Replicate to slaves
-    log-bin=sdc-mysql-0-bin
+    log-bin=sysdigcloud-mysql-0-bin
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -123,7 +126,6 @@ metadata:
   namespace: sysdigcloud
   labels:
     app: sysdigcloud-mysql-slave
-    role: mysql-slave
 data:
   mysql.endpoint: sdc-mysql
   mysql.user: admin
@@ -157,9 +159,11 @@ data:
     init-connect='SET NAMES utf8'
     character-set-server = utf8
     log-error  = /var/log/mysql/error.log
+    # Recommended in standard MySQL setup
     sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
+    # Disabling symbolic-links is recommended to prevent assorted security risks
     symbolic-links=0
-    # writes from master only
+    # Writes from master only
     super-read-only
 ---
 apiVersion: v1

@@ -1,24 +1,25 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: sdc-api
+  name: sdc-collector
+  namespace: sysdigcloud
   labels:
     app: sysdigcloud
-    role: api
+    role: collector
 spec:
   type: LoadBalancer
   ports:
-    - port: 443
-      name: secure-api
-      targetPort: 443
+    - port: 6443
+      name: secure-collector
+      targetPort: 6443
   selector:
     app: sysdigcloud
-    role: api
+    role: collector
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: sdc-api
+  name: sdc-collector
   namespace: sysdigcloud
 spec:
   replicas: 1
@@ -26,11 +27,11 @@ spec:
     metadata:
       labels:
         app: sysdigcloud
-        role: api
+        role: collector
     spec:
       containers:
-        - name: api
-          image: quay.io/sysdig/sysdigcloud-backend:658
+        - name: collector
+          image: quay.io/sysdig/sysdigcloud-backend:637
           volumeMounts:
             - name: logs
               mountPath: /var/log/sysdigcloud
@@ -46,9 +47,9 @@ spec:
             #  mountPath: /opt/kubernets_secrets
           env:
             - name: ROLES
-              value: api
+              value: collector
             - name: LOG_ROLE
-              value: api
+              value: collector
             - name: API_ENDPOINT
               valueFrom:
                 configMapKeyRef:
@@ -60,9 +61,8 @@ spec:
                   name: sysdigcloud-config
                   key: sysdigcloud.jvm.options
           readinessProbe:
-            httpGet:
-              path: /api/ping
-              port: 9000
+            tcpSocket:
+              port: 6000
             initialDelaySeconds: 30
             timeoutSeconds: 2
       imagePullSecrets:

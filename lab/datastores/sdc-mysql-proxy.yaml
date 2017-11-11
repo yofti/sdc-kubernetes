@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sdc-mysql
+  namespace: sysdigcloud
+  labels:
+    app: sysdigcloud
+    role: mysql
+spec:
+  clusterIP: None
+  ports:
+    - port: 3306
+      targetPort: 3306
+      name: mysql
+  selector:
+    app: cloudsqlproxy
+    role: mysql
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: cloudsqlproxy
+  namespace: sysdigcloud
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: cloudsqlproxy
+        role: mysql
+    spec:
+      containers:
+        - name: cloudsql-proxy
+          image: gcr.io/cloudsql-docker/gce-proxy:1.11
+          command: ["/cloud_sql_proxy", "--dir=/cloudsql",
+                    "-instances=sysdig-disney:us-west1:sysdig-disney=tcp:0.0.0.0:3306",
+                    "-credential_file=/secrets/cloudsql/credentials.json"]
+          ports:
+            - name: mysql
+              containerPort: 3306          
+          volumeMounts:
+            - name: cloudsql-instance-credentials
+              mountPath: /secrets/cloudsql
+              readOnly: true
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs
+            - name: cloudsql
+              mountPath: /cloudsql
+      volumes:
+        - name: cloudsql-instance-credentials
+          secret:
+            secretName: cloudsql-instance-credentials
+        - name: cloudsql
+          emptyDir:
+        - name: ssl-certs
+          hostPath:
+            path: /etc/ssl/certs

@@ -12,7 +12,7 @@ spec:
     - port: 9200
       name: api
     - port: 9300
-      name: transport
+      name: transport-protocol
   selector:
     app: sysdigcloud
     role: elasticsearch
@@ -37,7 +37,7 @@ spec:
         role: elasticsearch
     spec:
       containers:
-        - image: quay.io/sysdig/elasticsearch:5.1.1
+        - image: elasticsearch:5.5
           name: elasticsearch
           # https://www.elastic.co/blog/bootstrap_checks_annoying_instead_of_devastating
           # Elasticsearch team decided to force everybody to run ES5 with the following sysctl option:
@@ -50,7 +50,7 @@ spec:
             privileged: true
           env:
             - name: ELASTICSEARCH_SERVICE
-              value: sdc-elasticsearch
+              value: sysdigcloud-elasticsearch
             - name: ELASTICSEARCH_GOSSIP_NODES_NUM
               value: "2"
             - name: ELASTICSEARCH_CLUSTER_NAME
@@ -63,18 +63,13 @@ spec:
           volumeMounts:
             - mountPath: /usr/share/elasticsearch/data
               name: data
-          ports:
-          - name: api
-            containerPort: 9200
-          - name: transport
-            containerPort: 9300
       imagePullSecrets:
         - name: sysdigcloud-pull-secret
   volumeClaimTemplates:
   - metadata:
       name: data
     spec:
-      storageClassName: aws-gp2-multi-az
+      storageClassName: gce-pd
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
