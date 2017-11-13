@@ -9,18 +9,21 @@ NB: Currently, only AWS and GKE deployments are supported.
 
 Here is a list of the highlights:
 
-- *Introduction of Statefulsets* 
+- **Introduction of Statefulsets**
 	Replication Sets and their improved kin, Deployment Sets are good for stateless loads. But if you have states, like we do in our database (datastore) layer, you do need Stateful Sets.
-- *Introduction of persistence to datastores*
+- **Introduction of persistence to datastores**
 	The key that makes Stateful Sets magical is the use of Persistent Volume Claims. PODs can now ask for block disks from the cloud provider dynamically. The disks can be encrypted, adjusted for IOPS specific performance and they can also be Snapshoted for backups.
-3. Elimination of SPOF's (single points of failure).
+- **Elimination of SPOF's (single points of failure)**
 	All datastore components are now highly-available running in Stateful sets with replicas >= 3. Cassandra and Elasticsearch and full active/active cluster rings. Mysql and Redis are currently setup with master/slave replications. 
-4. Performance improvements due to addition of "read-only" services
+- **Performance improvements due to addition of "read-only" services**
+
 	With the addition of Mysql and Redis slaves, we now have new endpoints in Kubernetes for read-only access. Backend components can point their read operations to the slaves and thereby minimize the load on the master instances.
-5. All configurations consolidated into a single file
-	All configurations for the application are now in the etc/sdc-config.yaml file. 
-6. Addition of rudimentary install.sh and uninstall.sh scripts.
-7. Support for Multi Availability Zone (multi AZ) deployments.
+- **All configurations consolidated into a single file**
+
+  etc/sdc-config.yaml holds every configurable parameter.
+- **Addition of rudimentary install.sh and uninstall.sh scripts.**
+- **Support for Multi Availability Zone (multi AZ) deployments**
+
 	As long as the underlying Kubernetes is deployed in Multi-AZ mode, we can run on it.
 
 
