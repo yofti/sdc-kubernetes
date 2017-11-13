@@ -1,5 +1,29 @@
 # sdc-kubernetes: Sysdig Cloud Monitor Backend on Kubernetes
 
+
+## What is this?
+
+sdc-kubernetes is an on-prem version of [Sysdig Monitor](https://sysdig.com/product/monitor/), a SAAS offering by Sysdig Inc for monitoring containerized envrionments. The official on-prem Kubernetes guide can be found [here](https://github.com/draios/sysdigcloud-kubernetes). This repo is the result of a personal, on-going proof-of-concept project on improving certain aspects of Kubernetes deployment.
+
+NB: Currently, only AWS and GKE deployments are supported.
+
+Here is a list of the highlights:
+
+1. Introduction of Statefulsets. 
+	Replication Sets and their improved kin, Deployment Sets are good for stateless loads. But if you have states, like we do in our database (datastore) layer, you do need Stateful Sets.
+2. Introduction of persistence to datastores.
+	The key that makes Stateful Sets magical is the use of Persistent Volume Claims. PODs can now ask for block disks from the cloud provider dynamically. The disks can be encrypted, adjusted for IOPS specific performance and they can also be Snapshoted for backups.
+3. Elimination of SPOF's (single points of failure).
+	All datastore components are now highly-available running in Stateful sets with replicas >= 3. Cassandra and Elasticsearch and full active/active cluster rings. Mysql and Redis are currently setup with master/slave replications. 
+4. Performance improvements due to addition of "read-only" services
+	With the addition of Mysql and Redis slaves, we now have new endpoints in Kubernetes for read-only access. Backend components can point their read operations to the slaves and thereby minimize the load on the master instances.
+5. All configurations consolidated into a single file
+	All configurations for the application are now in the etc/sdc-config.yaml file. 
+6. Addition of rudimentary install.sh and uninstall.sh scripts.
+7. Support for Multi Availability Zone (multi AZ) deployments.
+	As long as the underlying Kubernetes is deployed in Multi-AZ mode, we can run on it.
+
+
 ## Infrastructure Overview 
 
 ![sdc-kubernetes](https://user-images.githubusercontent.com/12384605/32736470-653dabb8-c84c-11e7-89bb-71c201ec980f.png?raw=true)
@@ -34,7 +58,7 @@ Datastores (redis, mysql, elasticsearch and cassandra) are stateful. They are co
 2. Edit the file *etc/sdc-config.yaml*
 	* On line 7, find the entry *.dockerconfigjson*. Add your quay.io secret.
 	* On line 17, find the entry *sysdigcloud.license*. Add the contents of your license (uri) file. 
-	* All configurable parameters for this applications are in this file. 
+	* All configurable parameters for this applications are in this file. Edit what you see fit.
 3. `cd aws` or `cd gke` depending on your cloud provider.
 4. Run ./install.sh
 
