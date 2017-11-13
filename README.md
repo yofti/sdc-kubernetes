@@ -1,7 +1,8 @@
 # sdc-kubernetes: Sysdig Cloud Monitor Backend on Kubernetes
 
 ## Infrastructure Overview 
-![] (aws/docs/images/sdc-k8s-architecture.png?raw=true)
+
+![] (docs/images/sdc-k8s-architecture.png?raw=true)
 
 ###### Backend components
 * api-servers: provide a web and API interface to the main application
