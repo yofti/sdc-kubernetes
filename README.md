@@ -9,9 +9,9 @@ NB: Currently, only AWS and GKE deployments are supported.
 
 Here is a list of the highlights:
 
-1. Introduction of Statefulsets. 
+- *Introduction of Statefulsets* 
 	Replication Sets and their improved kin, Deployment Sets are good for stateless loads. But if you have states, like we do in our database (datastore) layer, you do need Stateful Sets.
-2. Introduction of persistence to datastores.
+- *Introduction of persistence to datastores*
 	The key that makes Stateful Sets magical is the use of Persistent Volume Claims. PODs can now ask for block disks from the cloud provider dynamically. The disks can be encrypted, adjusted for IOPS specific performance and they can also be Snapshoted for backups.
 3. Elimination of SPOF's (single points of failure).
 	All datastore components are now highly-available running in Stateful sets with replicas >= 3. Cassandra and Elasticsearch and full active/active cluster rings. Mysql and Redis are currently setup with master/slave replications. 
@@ -145,9 +145,6 @@ Describe the sdc-collector service to see the full collector endpoint URL. It wi
 
 
 
-## Operations Guide
-
-
 ## What does the installer do?
 
 1. It creates a namespace called *sysdigcloud* where all components are deployed.
@@ -169,3 +166,5 @@ Describe the sdc-collector service to see the full collector endpoint URL. It wi
 5. Deploys the backend Deployment sets (worker, collect and api)
 
 	`kubectl create -R -f backend`
+
+## Operations Guide
