@@ -1,7 +1,12 @@
 # sdc-kubernetes: Sysdig Cloud Monitor Backend on Kubernetes
 
+## Table of Contents
+  * [What is this?](#what?)
+  * [Infrastructure Overview](#Infrastructure-Overview)
+  * [Requirements](#Requirements)
 
-## What is this?
+
+## What is this? <a id="what?"></a>
 
 sdc-kubernetes is an on-prem version of [Sysdig Monitor](https://sysdig.com/product/monitor/), a SAAS offering by Sysdig Inc for monitoring containerized envrionments. The official on-prem Kubernetes guide can be found [here](https://github.com/draios/sysdigcloud-kubernetes). This repo is the result of a personal, on-going proof-of-concept project on improving certain aspects of Kubernetes deployment.
 
@@ -24,7 +29,7 @@ Here is a list of the highlights:
 	As long as the underlying Kubernetes is deployed in Multi-AZ mode, we can run on it.
 
 
-## Infrastructure Overview 
+## Infrastructure Overview <a id="Infrastructure-Overview"
 
 ![sdc-kubernetes](https://user-images.githubusercontent.com/12384605/32736470-653dabb8-c84c-11e7-89bb-71c201ec980f.png?raw=true)
 
