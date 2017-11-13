@@ -16,14 +16,11 @@ Here is a list of the highlights:
 - **Elimination of SPOF's (single points of failure)**
 	All datastore components are now highly-available running in Stateful sets with replicas >= 3. Cassandra and Elasticsearch and full active/active cluster rings. Mysql and Redis are currently setup with master/slave replications. 
 - **Performance improvements due to addition of "read-only" services**
-
 	With the addition of Mysql and Redis slaves, we now have new endpoints in Kubernetes for read-only access. Backend components can point their read operations to the slaves and thereby minimize the load on the master instances.
 - **All configurations consolidated into a single file**
-
   etc/sdc-config.yaml holds every configurable parameter.
 - **Addition of rudimentary install.sh and uninstall.sh scripts.**
 - **Support for Multi Availability Zone (multi AZ) deployments**
-
 	As long as the underlying Kubernetes is deployed in Multi-AZ mode, we can run on it.
 
 
