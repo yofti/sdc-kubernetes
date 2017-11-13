@@ -2,7 +2,7 @@
 
 ## Infrastructure Overview 
 
-![] (docs/images/sdc-k8s-architecture.png?raw=true)
+![docs/images/sdc-k8s-architecture.png?raw=true]
 
 ###### Backend components
 * api-servers: provide a web and API interface to the main application
