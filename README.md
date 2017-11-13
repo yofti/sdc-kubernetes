@@ -2,7 +2,7 @@
 
 ## Infrastructure Overview 
 
-![] (https://github.com/yofti/sdc-kubernetes/blob/master/docs/images/sdc-k8s-architecture.png?raw=true)
+![https://github.com/yofti/sdc-kubernetes/blob/master/docs/images/sdc-k8s-architecture.png?raw=true]
 
 ###### Backend components
 * api-servers: provide a web and API interface to the main application
