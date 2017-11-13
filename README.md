@@ -1,20 +1,18 @@
 # sdc-kubernetes: Sysdig Cloud Monitor Backend on Kubernetes
 
 ## Table of Contents
-  * [What is this?](#What is this?)
-  * [Infrastructure Overview](#Infrastructure Overview)
+  * [What is this?](#What-is-this?)
+  * [Infrastructure Overview](#Infrastructure-Overview)
   * [Requirements](#Requirements)
-  * [Installation Guide](#Installation Guide)
-  * [Confirm Installation](#Confirm Installation)
-  * [What does the installer do?](#What does the installer do?)
-  * [Operations Guide](#Operations Guide)
+  * [Installation Guide](#Installation-Guide)
+  * [Confirm Installation](#Confirm-Installation)
+  * [What does the installer do?](#What-does-the-installer-do?)
+  * [Operations Guide](#Operations-Guide)
 
 
-## What is this? <a id="What is this?"></a>
+## What is this? <a id="What-is-this?"></a>
 
 sdc-kubernetes is an on-prem version of [Sysdig Monitor](https://sysdig.com/product/monitor/), a SAAS offering by Sysdig Inc for monitoring containerized envrionments. The official on-prem Kubernetes guide can be found [here](https://github.com/draios/sysdigcloud-kubernetes). This repo is the result of a personal, on-going proof-of-concept project on improving certain aspects of Kubernetes deployment.
-
-NB: Currently, only AWS and GKE deployments are supported.
 
 Here is a list of the highlights:
 
@@ -32,8 +30,10 @@ Here is a list of the highlights:
 - **Support for Multi Availability Zone (multi AZ) deployments**
 	As long as the underlying Kubernetes is deployed in Multi-AZ mode, we can run on it.
 
+Some lowlights and TODOs:
 
-## Infrastructure Overview <a id="Infrastructure Overview"></a>
+
+## Infrastructure Overview <a id="Infrastructure-Overview"></a>
 
 ![sdc-kubernetes](https://user-images.githubusercontent.com/12384605/32736470-653dabb8-c84c-11e7-89bb-71c201ec980f.png?raw=true)
 
@@ -60,7 +60,7 @@ Datastores (redis, mysql, elasticsearch and cassandra) are stateful. They are co
 - Sysdig Cloud license
 - kubectl installed on your machine and communicating with the Kubernetes cluster
 
-## Installation Guide <a id="Installation Guide"></a>
+## Installation Guide <a id="Installation-Guide"></a>
 
 1. Clone this repository to your machine
 	`git clone https://github.com/yofti/sdc-kubernetes`
@@ -72,7 +72,7 @@ Datastores (redis, mysql, elasticsearch and cassandra) are stateful. They are co
 4. Run ./install.sh
 
 
-## Confirm Installation  <a id="Confirm Installation"></a>
+## Confirm Installation  <a id="Confirm-Installation"></a>
 
 After installation, the list of pods in the sysdigcloud namespace should like this:
 	
@@ -154,7 +154,7 @@ Describe the sdc-collector service to see the full collector endpoint URL. It wi
 
 
 
-## What does the installer do? <a id="What does the installer do?"></a>
+## What does the installer do? <a id="What-does-the-installer-do?"></a>
 
 1. It creates a namespace called *sysdigcloud* where all components are deployed.
 
@@ -176,5 +176,21 @@ Describe the sdc-collector service to see the full collector endpoint URL. It wi
 
 	`kubectl create -R -f backend`
 
-## Operations Guide <a id="Operations Guide"></a>
+## Operations Guide <a id="Operations-Guide"></a>
+
+### Stop and Start
+
+### Scale up and down
+
+### Uninstall
+
+### Modifying ConfigMap
+
+
+
+
+
+
+
+
 

@@ -11,4 +11,5 @@ kubectl delete -f datastores/sdc-cassandra.yaml &
 kubectl delete -f datastores/sdc-elasticsearch.yaml &
 kubectl delete -f datastores/sdc-mysql-slaves.yaml &
 
-kubectl delete namespace sysdigcloud 
+NB: deleting namespace deletes PVC's
+#kubectl delete namespace sysdigcloud 
