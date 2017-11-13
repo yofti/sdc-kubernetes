@@ -1,7 +1,7 @@
 # sdc-kubernetes: Sysdig Cloud Monitor Backend on Kubernetes
 
 ## Infrastructure Overview 
-![sdc-k8s architecture] (aws/docs/images/sdc-k8s-architecture.png?raw=true "Architecture")
+![sdc-k8s architecture] (aws/docs/images/sdc-k8s-architecture.png?)
 
 ###### Backend components
 * api-servers: provide a web and API interface to the main application
@@ -38,7 +38,7 @@ Datastores (redis, mysql, elasticsearch and cassandra) are stateful. They are co
 4. Run ./install.sh
 
 
-## Operations Guide
+## Confirm Installation
 
 After installation, the list of pods in the sysdigcloud namespace should like this:
 	
@@ -118,6 +118,9 @@ Describe the sdc-collector service to see the full collector endpoint URL. It wi
 	  34m		34m		1	service-controller			Normal		CreatingLoadBalancer	Creating load balancer
 	  33m		33m		1	service-controller			Normal		CreatedLoadBalancer	Created load balancer
 
+
+
+## Operations Guide
 
 
 ## What does the installer do?
