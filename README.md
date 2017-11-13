@@ -2,7 +2,7 @@
 
 ## Infrastructure Overview 
 
-![sdc-kubernetes] (https://user-images.githubusercontent.com/12384605/32736470-653dabb8-c84c-11e7-89bb-71c201ec980f.png?raw=true)
+![sdc-kubernetes](https://user-images.githubusercontent.com/12384605/32736470-653dabb8-c84c-11e7-89bb-71c201ec980f.png?raw=true)
 
 ###### Backend components
 * api-servers: provide a web and API interface to the main application
