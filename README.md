@@ -153,7 +153,7 @@ It will be `ad0d03112c70611e79d6006e5a830746-1802392156.us-west-1.elb.amazonaws.
 
 Describe the sdc-collector service to see the full collector endpoint URL. It will be `ad0e5cf87c70611e79d6006e5a830746-257288196.us-west-1.elb.amazonaws.com` in this case. This will be the URL that agents (frontend) use to connect to this backend.
 
-	$ kds sdc-collector
+	$ kubectl -n sysdigcloud describe service sdc-collector
 	Name:			sdc-collector
 	Namespace:		sysdigcloud
 	Labels:			app=sysdigcloud
@@ -172,6 +172,10 @@ Describe the sdc-collector service to see the full collector endpoint URL. It wi
 	  ---------	--------	-----	----			-------------	--------	------			-------
 	  34m		34m		1	service-controller			Normal		CreatingLoadBalancer	Creating load balancer
 	  33m		33m		1	service-controller			Normal		CreatedLoadBalancer		Created load balancer
+
+
+In the above example, you'd go to `http://ad0d03112c70611e79d6006e5a830746-1802392156.us-west-1.elb.amazonaws.com` to access the main Monitor GUI.
+Point your collectors to `ad0e5cf87c70611e79d6006e5a830746-257288196.us-west-1.elb.amazonaws.com`.
 
 
 
