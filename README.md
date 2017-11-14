@@ -32,6 +32,17 @@ Here is a list of the highlights:
 
 Some lowlights and TODOs:
 
+- **Redis cluster support**
+	File a feature request for dev to support clustered redis. Seems like an easy code fix. We can get rid of the master/slave redis setup and go for a full cluster
+- **Support Galera Active/Active**
+	We're using Percona master/slave replication. We could easily go active/active on mysql.
+- **AWS snitch for Cassandra**
+	Yes, we can run on a multi-AZ k8s cluster. But our Cassandra is not really aware of it. It uses the 'simple' snitch. We could have Cassandra racks distributed accross zones.
+- **Support non-cloud deployments**
+	We can still do Statefulsets even if we don't have cloud providers. We can use local disks with PVC's. If we have access to SAN's, we could use products like [portworx](http://portworx.com)
+- **Better install/uninstall**
+	Error checking, logging. Add stop/start scripts?
+
 
 ## Infrastructure Overview <a id="Infrastructure-Overview"></a>
 
@@ -127,7 +138,7 @@ It will be `ad0d03112c70611e79d6006e5a830746-1802392156.us-west-1.elb.amazonaws.
 	  FirstSeen	LastSeen	Count	From			SubObjectPath	Type		Reason			Message
 	  ---------	--------	-----	----			-------------	--------	------			-------
 	  33m		33m		1	service-controller			Normal		CreatingLoadBalancer	Creating load balancer
-	  33m		33m		1	service-controller			Normal		CreatedLoadBalancer	Created load balancer
+	  33m		33m		1	service-controller			Normal		CreatedLoadBalancer		Created load balancer
 
 
 Describe the sdc-collector service to see the full collector endpoint URL. It will be `ad0e5cf87c70611e79d6006e5a830746-257288196.us-west-1.elb.amazonaws.com` in this case. This will be the URL that agents (frontend) use to connect to this backend.
@@ -150,7 +161,7 @@ Describe the sdc-collector service to see the full collector endpoint URL. It wi
 	  FirstSeen	LastSeen	Count	From			SubObjectPath	Type		Reason			Message
 	  ---------	--------	-----	----			-------------	--------	------			-------
 	  34m		34m		1	service-controller			Normal		CreatingLoadBalancer	Creating load balancer
-	  33m		33m		1	service-controller			Normal		CreatedLoadBalancer	Created load balancer
+	  33m		33m		1	service-controller			Normal		CreatedLoadBalancer		Created load balancer
 
 
 
@@ -174,19 +185,135 @@ Describe the sdc-collector service to see the full collector endpoint URL. It wi
 
 5. Deploys the backend Deployment sets (worker, collect and api)
 
-	`kubectl create -R -f backend`
+	`kubectl create -R -f backend/`
 
 ## Operations Guide <a id="Operations-Guide"></a>
 
 ### Stop and Start
 
+You can stop the whole application by running `uninstall.sh`. It will save the namespace, storageclasses and PVC's. You can then start the application with `install.sh`. Script will complain about pre-existing elements, but the application will still be started. PVC's are preserved which means all data on redis, mysql, elasticsearch and cassandra are persisted. If you want to start with application with clean PVC's, either uninstall the application as described in the "Uninstall section" or delete PVC's manually after shutting down applications. 
+
+You can also stop and start individual components:
+
+###### Shutdown all backend components using their definition yaml files
+```
+$ pwd
+~/sdc-kubernetes/aws
+
+$ kubectl -n sysdigcloud -R -f backend/
+service "sdc-api" deleted
+deployment "sdc-api" deleted
+service "sdc-collector" deleted
+deployment "sdc-collector" deleted
+deployment "sdc-worker" deleted
+```
+
+###### Shutdown Cassandra using it's yaml file
+```
+$ kubectl -n sysdigcloud delete -f datastore/sdc-cassandra.yaml
+service "sdc-cassandra" deleted
+statefulset "sdc-cassandra" deleted
+```
+
+###### Shutdown Elasticsearch and it's associated service
+```
+$ kubectl -n sysdigcloud get statefulsets 
+NAME                DESIRED   CURRENT   AGE
+sdc-elasticsearch   3         3         2d
+sdc-mysql           1         1         2d
+sdc-mysql-slave     3         3         2d
+sdc-redis           1         1         2d
+sdc-redis-slave     2         2         2d
+
+$ kubectl -n sysdigcloud delete statefulset sdc-elasticsearch
+statefulset "sdc-elasticsearch" deleted
+
+$ kubectl -n sysdigcloud get services
+NAME                CLUSTER-IP   EXTERNAL-IP   PORT(S)              AGE
+sdc-elasticsearch   None         <none>        9200/TCP,9300/TCP    2d
+sdc-mysql           None         <none>        3306/TCP             2d
+sdc-mysql-slave     None         <none>        3306/TCP             2d
+sdc-redis           None         <none>        6379/TCP,16379/TCP   2d
+sdc-redis-slave     None         <none>        6379/TCP,16379/TCP   2d
+
+$ kubectl -n sysdigcloud delete service sdc-elasticsearch
+service "sdc-elasticsearch" deleted
+```
+
+###### Start Components one by one
+```
+$ pwd
+~/sdc-kubernetes/aws
+
+$ kubectl create -f etc/sdc-config.yaml
+$ kubectl create -f datastores/sdc-mysql-master.yaml 
+$ kubectl create -f datastores/sdc-mysql-slaves.yaml 
+$ kubectl create -f datastores/sdc-redis-master.yaml 
+$ kubectl create -f datastores/sdc-redis-slaves.yaml 
+$ kubectl create -f datastores/sdc-cassandra.yaml  
+$ kubectl create -f datastores/sdc-elasticsearch.yaml 
+$ kubectl create -f backend/sdc-api.yaml
+$ kubectl create -f backend/sdc-colector.yaml
+$ kubectl create -f backend/sdc-worker.yaml
+
+```
+
 ### Scale up and down
+
+You can scale up and down any sdc-kubernetes component. 
+
+For worker, collector and api which are deployed as Deployment sets, do:
+```
+$kubectl -n sysdigcloud scale --replicas=5 deployment sdc-api
+$kubectl -n sysdigcloud scale --replicas=5 deployment sdc-collector
+$kubectl -n sysdigcloud scale --replicas=5 deployment sdc-worker
+
+$ for i in sdc-api sdc-collector sdc-worker; do kubectl -n sysdigcloud --replicas=1 $i; done
+```
+
+For the datastores, redis, mysql, elasticsearch and cassandra, which are deployed as Statefulsets, do:
+```
+#scale up or down depending on existing number of copies
+$kubectl -n sysdigcloud scale --replicas=4 statefulset sdc-cassandra
+$kubectl -n sysdigcloud scale --replicas=4 statefulset sdc-elasticsearch
+$kubectl -n sysdigcloud scale --replicas=4 statefulset sdc-mysql-slave
+$kubectl -n sysdigcloud scale --replicas=4 statefulset sdc-redis-slave
+```
+
 
 ### Uninstall
 
+To completely remove the sdc-kubernetes application, run the following commands
+``` bash
+$uninstall.sh
+$kubectl delete namespace sysdigcloud
+```
+This will shutdown all components and by destorying the namespace, it will destroy the PVC's.
+
+NB: This step destroys data. 
+
 ### Modifying ConfigMap
 
+This deployment creates a bunch of configMaps:
+```
+yofti-macbook2:aws yoftimakonnen$ kgc
+NAME                             DATA      AGE
+sysdigcloud-config               48        2d
+sysdigcloud-mysql-config         7         2d
+sysdigcloud-mysql-config-slave   7         2d
+sysdigcloud-redis-config         2         2d
+sysdigcloud-redis-config-slave   2         2d
 
+```
+
+You can edit a particular configMap:
+`$kubectl -n sysdigcloud edit configmap sysdigcloud-config`
+
+The preferred method would be to edit the file `etc/sdc-config.yaml` and replace the whole configMap set
+```
+$vi etc/sdc-config.yaml
+$kubectl -n sysdigcloud replace configmap -f etc/sdc-config.yaml
+```
 
 
 
