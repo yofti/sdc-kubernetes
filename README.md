@@ -10,6 +10,9 @@
   * [Operations Guide](#Operations-Guide)
   	- [Stop and Start](#Stop-and-Start)
   	- [Scale up and down](#scale-up-and-down)
+  	- [Modifying configMap](#Modifying-configMap)
+  	- [Version updates](#Version-updates)
+  	- [Uninstall](#Uninstall)
   * [Tips and Tricks](#Tips-and-Tricks)
 
 
@@ -47,6 +50,8 @@ Some lowlights and TODOs:
 	We can still do Statefulsets even if we don't have cloud providers. We can use local disks with PVC's. If we have access to SAN's, we could use products like [portworx](http://portworx.com)
 - **Better install/uninstall**
 	Error checking, logging. Add stop/start scripts?
+- **Hard-codes zones in Storageclasses**
+	The only things that makes us multi-AZ is where our StorageClasses request disk from. Do they do it from one zone or many? And which ones? Pay special attention to your storageclasses, persistent volume claims and zones when deploying this package. Modify existing Storageclasses to fit your needs.
 
 
 ## Infrastructure Overview <a id="Infrastructure-Overview"></a>
@@ -111,7 +116,7 @@ After installation, the list of pods in the sysdigcloud namespace should like th
 
 Check the services that were created.
 
-	$ kgs
+	$ kubectl -n sysdigcloud get services
 	NAME                CLUSTER-IP   EXTERNAL-IP        PORT(S)                               AGE
 	sdc-api             10.3.0.36    ad0d03112c706...   443:32253/TCP                         32m
 	sdc-cassandra       None         <none>             9042/TCP,7000/TCP,7001/TCP,7199/TCP   34m
@@ -125,7 +130,7 @@ Check the services that were created.
 Describe the sdc-api service to get the full API endpoint URL.
 It will be `ad0d03112c70611e79d6006e5a830746-1802392156.us-west-1.elb.amazonaws.com` in this case. Use this URL to access the SDC Monitor interface. This URL can be given a sensible URL via Route53 or similar.
 
-	$ kds sdc-api
+	$ kubectl -n sysdigcloud describe service sdc-api
 	Name:			sdc-api
 	Namespace:		sysdigcloud
 	Labels:			app=sysdigcloud
@@ -286,7 +291,6 @@ $kubectl -n sysdigcloud scale --replicas=4 statefulset sdc-redis-slave
 ```
 
 
-
 #### Modifying configMap <a id="Modifying-configMap"></a>
 
 This deployment creates a bunch of configMaps:
@@ -358,7 +362,71 @@ NB: This step destroys data. Irretrievably.
 
 ## Tips and Tricks <a id="Tips-and-Tricks"></a>
 
+* Use aliases. 
 
+Too much typing with kubectl
 
+```
+$alias
+alias k='kubectl'
+alias kc='kubectl create'
+alias kd='kubectl describe'
+alias kdd='kubectl describe deployment'
+alias kdds='kubectl describe daemonset'
+alias kdl='kubectl delete'
+alias kdp='kubectl describe pod'
+alias kdrc='kubectl describe rc'
+alias kdrs='kubectl describe rs'
+alias kds='kubectl describe service'
+alias kdss='kubectl describe statefulset'
+alias ke='kubectl exec -i -t'
+alias kg='kubectl get'
+alias kgc='kubectl get configmap'
+alias kgd='kubectl get deployment'
+alias kgds='kubectl get daemonset'
+alias kgn='kubectl get nodes'
+alias kgns='kubectl get namespace'
+alias kgp='kubectl get pods'
+alias kgpv='kubectl get pv'
+alias kgpvc='kubectl get pvc'
+alias kgrc='kubectl get rc'
+alias kgrs='kubectl get rs'
+alias kgs='kubectl get svc'
+alias kgsc='kubectl get storageclass'
+alias kgss='kubectl get statefulset'
+alias kl='kubectl logs'
+alias klf='kubectl logs -f'
+```
+* Master your Kubectl configs and contexts
+
+You might have multiple kubernetes clusters that you are managing. Each one has a context. Setting namespace in your context will save you from supplying --namespace flags.
+
+```
+yofti-macbook2:aws yoftimakonnen$ k config get-clusters
+NAME
+gke_whole-cloth-182215_us-west1-a_yofti-gcp-k8-cluster
+kube-aws-k8s-yoftilabs-com-cluster
+gke_sysdig-disney_us-central1-a_sysdig-disney-dev
+gke_sysdig-disney_us-west1-a_sysdig-disney
+yofti-macbook2:aws yoftimakonnen$ k config get-contexts
+CURRENT   NAME                                                     CLUSTER                                                  AUTHINFO                                                 NAMESPACE
+          gke_whole-cloth-182215_us-west1-a_yofti-gcp-k8-cluster   gke_whole-cloth-182215_us-west1-a_yofti-gcp-k8-cluster   gke_whole-cloth-182215_us-west1-a_yofti-gcp-k8-cluster   sysdigcloud
+*         kube-aws-k8s-yoftilabs-com-context                       kube-aws-k8s-yoftilabs-com-cluster                       kube-aws-k8s-yoftilabs-com-admin                         sysdigcloud
+          gke_sysdig-disney_us-central1-a_sysdig-disney-dev        gke_sysdig-disney_us-central1-a_sysdig-disney-dev        gke_sysdig-disney_us-central1-a_sysdig-disney-dev        sysdigcloud
+          gke_sysdig-disney_us-west1-a_sysdig-disney               gke_sysdig-disney_us-west1-a_sysdig-disney               gke_sysdig-disney_us-west1-a_sysdig-disney               sysdigcloud
+yofti-macbook2:aws yoftimakonnen$ k config current-context
+kube-aws-k8s-yoftilabs-com-context
+yofti-macbook2:aws yoftimakonnen$ k config set current-context gke_sysdig-disney_us-west1-a_sysdig-disney --namespace sysdigcloud
+Property "current-context" set.
+yofti-macbook2:aws yoftimakonnen$ k config current-context
+gke_sysdig-disney_us-west1-a_sysdig-disney
+yofti-macbook2:aws yoftimakonnen$ k config get-contexts
+CURRENT   NAME                                                     CLUSTER                                                  AUTHINFO                                                 NAMESPACE
+          kube-aws-k8s-yoftilabs-com-context                       kube-aws-k8s-yoftilabs-com-cluster                       kube-aws-k8s-yoftilabs-com-admin                         sysdigcloud
+          gke_sysdig-disney_us-central1-a_sysdig-disney-dev        gke_sysdig-disney_us-central1-a_sysdig-disney-dev        gke_sysdig-disney_us-central1-a_sysdig-disney-dev        sysdigcloud
+*         gke_sysdig-disney_us-west1-a_sysdig-disney               gke_sysdig-disney_us-west1-a_sysdig-disney               gke_sysdig-disney_us-west1-a_sysdig-disney               sysdigcloud
+          gke_whole-cloth-182215_us-west1-a_yofti-gcp-k8-cluster   gke_whole-cloth-182215_us-west1-a_yofti-gcp-k8-cluster   gke_whole-cloth-182215_us-west1-a_yofti-gcp-k8-cluster   sysdigcloud
+
+```
 
 
