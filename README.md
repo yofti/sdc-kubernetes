@@ -27,7 +27,7 @@ Here is a list of the highlights:
 - **Introduction of persistence to datastores**
 	The key that makes Stateful Sets magical is the use of Persistent Volume Claims. PODs can now ask for block disks from the cloud provider dynamically. The disks can be encrypted, adjusted for IOPS specific performance and they can also be Snapshoted for backups.
 - **Elimination of SPOF's (single points of failure)**
-	All datastore components are now highly-available running in Stateful sets with replicas >= 3. Cassandra and Elasticsearch and full active/active cluster rings. Mysql and Redis are currently setup with master/slave replications. 
+	All datastore components are now highly-available running in Stateful sets with replicas >= 3. Cassandra and Elasticsearch are full active/active cluster rings. Mysql and Redis are currently setup with master/slave replications. 
 - **Performance improvements due to addition of "read-only" services**
 	With the addition of Mysql and Redis slaves, we now have new endpoints in Kubernetes for read-only access. Backend components can point their read operations to the slaves and thereby minimize the load on the master instances.
 - **All configurations consolidated into a single file**
