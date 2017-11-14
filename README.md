@@ -8,6 +8,9 @@
   * [Confirm Installation](#Confirm-Installation)
   * [What does the installer do?](#What-does-the-installer-do?)
   * [Operations Guide](#Operations-Guide)
+  	- [Stop and Start](#Stop-and-Start)
+  	- [Scale up and down](#scale-up-and-down)
+  * [Tips and Tricks](#Tips-and-Tricks)
 
 
 ## What is this? <a id="What-is-this?"></a>
@@ -32,6 +35,8 @@ Here is a list of the highlights:
 
 Some lowlights and TODOs:
 
+- **Remove clear text passwords from configMap**
+	Switch to Kubernetes secret. Easy to do. Need backend help. They need to request for a different variable from configMap. P.S. Look in the install.sh under the lab directory to see how secrets are configured for Google CloudSQL.
 - **Redis cluster support**
 	File a feature request for dev to support clustered redis. Seems like an easy code fix. We can get rid of the master/slave redis setup and go for a full cluster
 - **Support Galera Active/Active**
@@ -189,7 +194,7 @@ Describe the sdc-collector service to see the full collector endpoint URL. It wi
 
 ## Operations Guide <a id="Operations-Guide"></a>
 
-### Stop and Start
+#### Stop and Start <a id="Stop-and-Start"></a>
 
 You can stop the whole application by running `uninstall.sh`. It will save the namespace, storageclasses and PVC's. You can then start the application with `install.sh`. Script will complain about pre-existing elements, but the application will still be started. PVC's are preserved which means all data on redis, mysql, elasticsearch and cassandra are persisted. If you want to start with application with clean PVC's, either uninstall the application as described in the "Uninstall section" or delete PVC's manually after shutting down applications. 
 
@@ -258,7 +263,7 @@ $ kubectl create -f backend/sdc-worker.yaml
 
 ```
 
-### Scale up and down
+#### Scale up and down <a id="Scale-up-and-down"></a>
 
 You can scale up and down any sdc-kubernetes component. 
 
@@ -281,22 +286,12 @@ $kubectl -n sysdigcloud scale --replicas=4 statefulset sdc-redis-slave
 ```
 
 
-### Uninstall
 
-To completely remove the sdc-kubernetes application, run the following commands
-``` bash
-$uninstall.sh
-$kubectl delete namespace sysdigcloud
-```
-This will shutdown all components and by destorying the namespace, it will destroy the PVC's.
-
-NB: This step destroys data. 
-
-### Modifying ConfigMap
+#### Modifying configMap <a id="Modifying-configMap"></a>
 
 This deployment creates a bunch of configMaps:
 ```
-yofti-macbook2:aws yoftimakonnen$ kgc
+yofti-macbook2:aws yoftimakonnen$ kubectl -n sysdigcloud get configmap
 NAME                             DATA      AGE
 sysdigcloud-config               48        2d
 sysdigcloud-mysql-config         7         2d
@@ -315,7 +310,53 @@ $vi etc/sdc-config.yaml
 $kubectl -n sysdigcloud replace configmap -f etc/sdc-config.yaml
 ```
 
+After updating the ConfigMap, the Sysdig Cloud components need to be restarted in order for the changed parameters to take effect. This can be done by simply forcing a rolling update of the deployments. A possible way to do so is:
 
+```
+kubectl patch deployment sdc-api -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}" --namespace sysdigcloud
+kubectl patch deployment sdc-collector -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}" --namespace sysdigcloud
+kubectl patch deployment sdc-worker -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}" --namespace sysdigcloud
+```
+
+This will ensure that the application restarts with no downtime (assuming the deployments have more than one replica each).
+
+
+#### Updates <a id="Updates"></a>
+
+Sysdig Cloud releases are listed [here](https://github.com/draios/sysdigcloud-kubernetes/releases). Each release has a version number (e.g. 702) and specific upgrade notes. If you look in the 3 backend files `backend/sdc-api.yaml`, `backend/sdc-collector.yaml` and `backend/sdc-worker.yaml`, you will see the following identical line in all of them under their container/image defintions:
+```
+image: quay.io/sysdig/sysdigcloud-backend:658
+```
+In this case, we are running version 658 of the backend. 
+
+To upgrade to version 702 (the latest), we have two options:
+
+1. Edit the backend files' yaml defintions. Add the right tag for the image `sysdigcloud-backend` like:
+```
+image: quay.io/sysdig/sysdigcloud-backend:658
+```
+and restart the app.
+
+2. You can do a rolling update if downtimes are sensitive.
+```
+kubectl set image deployment/sdc-api api=quay.io/sysdig/sysdigcloud-backend:702 --namespace sysdigcloud
+kubectl set image deployment/sdc-collector collector=quay.io/sysdig/sysdigcloud-backend:702 --namespace sysdigcloud
+kubectl set image deployment/sdc-worker worker=quay.io/sysdig/sysdigcloud-backend:702 --namespace sysdigcloud
+```
+
+#### Uninstall <a id="Uninstall"></a>
+
+To completely remove the sdc-kubernetes application, run the following commands
+```
+$uninstall.sh
+$kubectl delete namespace sysdigcloud
+```
+This will shutdown all components and by destorying the namespace, it will destroy the PVC's.
+
+NB: This step destroys data. Irretrievably.  
+
+
+## Tips and Tricks <a id="Tips-and-Tricks"></a>
 
 
 
