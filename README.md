@@ -325,7 +325,7 @@ kubectl patch deployment sdc-worker -p "{\"spec\":{\"template\":{\"metadata\":{\
 This will ensure that the application restarts with no downtime (assuming the deployments have more than one replica each).
 
 
-#### Updates <a id="Updates"></a>
+#### Version updates <a id="Version-updates"></a>
 
 Sysdig Cloud releases are listed [here](https://github.com/draios/sysdigcloud-kubernetes/releases). Each release has a version number (e.g. 702) and specific upgrade notes. If you look in the 3 backend files `backend/sdc-api.yaml`, `backend/sdc-collector.yaml` and `backend/sdc-worker.yaml`, you will see the following identical line in all of them under their container/image defintions:
 ```
@@ -402,25 +402,25 @@ alias klf='kubectl logs -f'
 You might have multiple kubernetes clusters that you are managing. Each one has a context. Setting namespace in your context will save you from supplying --namespace flags.
 
 ```
-yofti-macbook2:aws yoftimakonnen$ k config get-clusters
+$ k config get-clusters
 NAME
 gke_whole-cloth-182215_us-west1-a_yofti-gcp-k8-cluster
 kube-aws-k8s-yoftilabs-com-cluster
 gke_sysdig-disney_us-central1-a_sysdig-disney-dev
 gke_sysdig-disney_us-west1-a_sysdig-disney
-yofti-macbook2:aws yoftimakonnen$ k config get-contexts
+$ k config get-contexts
 CURRENT   NAME                                                     CLUSTER                                                  AUTHINFO                                                 NAMESPACE
           gke_whole-cloth-182215_us-west1-a_yofti-gcp-k8-cluster   gke_whole-cloth-182215_us-west1-a_yofti-gcp-k8-cluster   gke_whole-cloth-182215_us-west1-a_yofti-gcp-k8-cluster   sysdigcloud
 *         kube-aws-k8s-yoftilabs-com-context                       kube-aws-k8s-yoftilabs-com-cluster                       kube-aws-k8s-yoftilabs-com-admin                         sysdigcloud
           gke_sysdig-disney_us-central1-a_sysdig-disney-dev        gke_sysdig-disney_us-central1-a_sysdig-disney-dev        gke_sysdig-disney_us-central1-a_sysdig-disney-dev        sysdigcloud
           gke_sysdig-disney_us-west1-a_sysdig-disney               gke_sysdig-disney_us-west1-a_sysdig-disney               gke_sysdig-disney_us-west1-a_sysdig-disney               sysdigcloud
-yofti-macbook2:aws yoftimakonnen$ k config current-context
+$ k config current-context
 kube-aws-k8s-yoftilabs-com-context
-yofti-macbook2:aws yoftimakonnen$ k config set current-context gke_sysdig-disney_us-west1-a_sysdig-disney --namespace sysdigcloud
+$ k config set current-context gke_sysdig-disney_us-west1-a_sysdig-disney --namespace sysdigcloud
 Property "current-context" set.
-yofti-macbook2:aws yoftimakonnen$ k config current-context
+$ k config current-context
 gke_sysdig-disney_us-west1-a_sysdig-disney
-yofti-macbook2:aws yoftimakonnen$ k config get-contexts
+$ k config get-contexts
 CURRENT   NAME                                                     CLUSTER                                                  AUTHINFO                                                 NAMESPACE
           kube-aws-k8s-yoftilabs-com-context                       kube-aws-k8s-yoftilabs-com-cluster                       kube-aws-k8s-yoftilabs-com-admin                         sysdigcloud
           gke_sysdig-disney_us-central1-a_sysdig-disney-dev        gke_sysdig-disney_us-central1-a_sysdig-disney-dev        gke_sysdig-disney_us-central1-a_sysdig-disney-dev        sysdigcloud
