@@ -1,0 +1,86 @@
+# attaching the namespace to the cluster.name to differentiate different clusters
+# ex. elasticsearh-acceptance, elasticsearh-production, elasticsearh-monitoring
+#cluster.name: "sysdigcloud"
+
+# we provide a node.name that is the POD_NAME-NAMESPACE
+# ex. elasticsearh-0-acceptance, elasticsearh-1-acceptance, elasticsearh-2-acceptance
+#node.name: "${POD_NAME}-${NAMESPACE}"
+
+#network.host: "$POD_IP"
+
+# A hostname that resolves to multiple IP addresses will try all resolved addresses 
+# we provide the name for the headless service 
+# which resolves to the ip addresses of all the live attached pods
+# alternatively we can directly reference the hostnames of the pods
+
+# Unicast Discovery (disable multicast)
+#discovery.zen.ping.multicast.enabled: false
+#discovery.zen.ping.unicast.hosts: sdc-elasticsearch
+#discovery.zen.ping.unicast.hosts: [ "sdc-elasticsearch-01", "sdc-elasticsearch-02","sdc-elasticsearch-03" ]
+
+# minimum_master_nodes need to be explicitly set when bound on a public IP
+# set to 1 to allow single node clusters
+# more info: https://github.com/elastic/elasticsearch/pull/17288
+discovery.zen.minimum_master_nodes: 2
+
+bootstrap.memory_lock: true
+
+#-------------------------------------------------------------------------------------
+# RECOVERY: https://www.elastic.co/guide/en/elasticsearch/guide/current/important-configuration-changes.html
+# SETTINGS TO avoid the excessive shard swapping that can occur on cluster restarts
+#-------------------------------------------------------------------------------------
+# how many nodes shall be present to consider the cluster functional;
+# prevents Elasticsearch from starting recovery until these nodes are available
+gateway.recover_after_nodes: 2
+
+# how many nodes are expected in the cluster
+#gateway.expected_nodes: 3
+
+# how long we want to wait after [gateway.recover_after_nodes] is reached in order to start recovery process (if applicable). 
+#gateway.recover_after_time: 5m
+#-------------------------------------------------------------------------------------
+
+# The following settings control the fault detection process using the discovery.zen.fd prefix:
+# How often a node gets pinged. Defaults to 1s.
+discovery.zen.fd.ping_interval: 1s
+
+# How long to wait for a ping response, defaults to 30s.
+discovery.zen.fd.ping_timeout: 10s
+
+# How many ping failures / timeouts cause a node to be considered failed. Defaults to 3.
+discovery.zen.fd.ping_retries: 2
+
+
+## Threadpool Settings ##
+
+# Search pool
+#threadpool.search.type: fixed
+#threadpool.search.size: 20
+#threadpool.search.queue_size: 100
+
+# Bulk pool
+#threadpool.bulk.type: fixed
+#threadpool.bulk.size: 60
+#threadpool.bulk.queue_size: 300
+
+# Index pool
+#threadpool.index.type: fixed
+#threadpool.index.size: 20
+#threadpool.index.queue_size: 100
+
+# Indices settings
+#indices.memory.index_buffer_size: 30%
+#indices.memory.min_shard_index_buffer_size: 12mb
+#indices.memory.min_index_buffer_size: 96mb
+
+# Cache Sizes
+#indices.fielddata.cache.size: 15%
+#indices.fielddata.cache.expire: 6h
+#indices.cache.filter.size: 15%
+#indices.cache.filter.expire: 6h
+
+# Indexing Settings for Writes
+#index.refresh_interval: 30s
+#index.translog.flush_threshold_ops: 50000
+
+

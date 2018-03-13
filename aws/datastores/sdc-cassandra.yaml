@@ -11,6 +11,8 @@ spec:
   ports:
     - port: 9042
       name: cql
+    - port: 9160
+      name: thrift
     - port: 7000
       name: intra-node
     - port: 7001
@@ -41,8 +43,10 @@ spec:
       containers:
       - name: cassandra
         #image: gcr.io/google-samples/cassandra:v12
-        image: quay.io/sysdig/cassandra:2.1.15.0
-        #imagePullPolicy: Always
+        #image: quay.io/sysdig/cassandra:2.1.15.0
+        image: yofti/cassandra:2.2.11
+        #image: launcher.gcr.io/google/cassandra2
+        imagePullPolicy: Always
         ports:
         - containerPort: 7000
           name: intra-node
@@ -52,13 +56,15 @@ spec:
           name: jmx
         - containerPort: 9042
           name: cql
+        - containerPort: 9160
+          name: thrift
         resources:
-          limits:
-            cpu: "500m"
-            memory: 2Gi
           requests:
-           cpu: "500m"
-           memory: 2Gi
+           cpu: "2000m"
+           memory: 8Gi
+          limits:
+           cpu: "6000m"
+           memory: 18Gi
         securityContext:
           capabilities:
             add:
@@ -68,14 +74,18 @@ spec:
             exec:
               command: ["/bin/sh", "-c", "nodetool drain"]
         env:
-          #- name: CASSANDRA_SEEDS
-          #  value: "sdc-cassandra-0.sdc-cassandra.sysdigcloud.svc.cluster.local"
+          - name: CASSANDRA_SEEDS
+            value: "sdc-cassandra-0.sdc-cassandra.sysdigcloud.svc.cluster.local"
           - name: CASSANDRA_SERVICE
             value: sdc-cassandra
-          - name: CASSANDRA_SEED_PROVIDER
-            value: "io.k8s.cassandra.KubernetesSeedProvider"
+          #- name: CASSANDRA_SEED_PROVIDER
+          #  value: "io.k8s.cassandra.KubernetesSeedProvider"
           - name: CASSANDRA_CLUSTER_NAME
             value: "sysdigcloud"
+          - name: CASSANDRA_ENDPOINT_SNITCH
+            value: "Ec2Snitch"
+          - name: CASSANDRA_START_RPC
+            value: "true"
           - name: JVM_EXTRA_OPTS
             valueFrom:
                 configMapKeyRef:
@@ -107,11 +117,18 @@ spec:
             - echo
           initialDelaySeconds: 15
           timeoutSeconds: 5
+        # These volume mounts are persistent. They are like inline claims,
+        # but not exactly because the names need to match exactly one of
+        # the stateful pod volumes.
         volumeMounts:
         - name: data
           mountPath: /var/lib/cassandra
+
       imagePullSecrets:
       - name: sysdigcloud-pull-secret
+  # These are converted to volume claims by the controller
+  # and mounted at the paths mentioned above.
+  # do not use these in production until ssd GCEPersistentDisk or other ssd pd
   volumeClaimTemplates:
   - metadata:
       name: data
@@ -119,5 +136,5 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 10Gi
-      storageClassName: aws-gp2-multi-az
+          storage: 400Gi
+      storageClassName: aws-blazing-mutli-az

@@ -40,26 +40,27 @@ spec:
       containers:
       - name: sysdig-agent
         image: sysdig/agent
-#        imagePullPolicy: Always                            #OPTIONAL - Always pull the latest container image tag 
+        imagePullPolicy: Always                            #OPTIONAL - Always pull the latest container image tag 
         securityContext:
          privileged: true
         env:
         - name: ACCESS_KEY                                  #REQUIRED - replace with your Sysdig Cloud access key
-          value: d83ca891-d67a-4be8-b359-3986cdc0fdc1
-#        - name: RUN_MODE                                   #OPTIONAL - driverless mode (limited functionality. No kernel module. Minimum agent version 0.51.0)
-#          value: "nodriver" 
-        - name: COLLECTOR_PORT                             #OPTIONAL - on-prem install only
-          value: "6443"
+          value: f65322d7-da0c-44ea-b365-2506bb0db382
+        #- name: RUN_MODE                                   #OPTIONAL - driverless mode (limited functionality. No kernel module. Minimum agent version 0.51.0)
+        #  value: "nodriver" 
+        #- name: COLLECTOR_PORT                             #OPTIONAL - on-prem install only
+        #  value: "6443"
         - name: TAGS                                       #OPTIONAL
-          value: linux:coreos,cloud:aws,cluster:yofti-aws-multi-az-k8s,backend:658 
-        - name: COLLECTOR                                  #OPTIONAL - on-prem install only
-          value: sysdigcloud-collector.yoftilabs.com
-        - name: SECURE                                     #OPTIONAL - on-prem install only       
-          value: "true"
-        - name: CHECK_CERTIFICATE                          #OPTIONAL - on-prem install only
-          value: "false"
+          value: owner:yofti, linux:Debian-8-Jessie, provider:aws, builder:kops-1.8.0, k8s-version:v1.9.2, cluster:kops.yoftilabs.com, backend:760
+        #- name: COLLECTOR                                  #OPTIONAL - on-prem install only
+          #value: sysdigcloud-collector.yoftilabs.com
+          #value: a8feb594df34b11e799d6021e0b5b027-1613285220.us-west-2.elb.amazonaws.com
+        #- name: SECURE                                     #OPTIONAL - on-prem install only       
+        #  value: "true"
+        #- name: CHECK_CERTIFICATE                          #OPTIONAL - on-prem install only
+        #  value: "false"
         - name: ADDITIONAL_CONF                            #OPTIONAL pass additional parameters to the agent such as authentication example provided here
-          value: "new_k8s: true"
+          value: "dev_new_k8s: true\nk8s_ssl_verify_certificate: false"
 #          value: "k8s_uri: https://myacct:mypass@localhost:4430\nk8s_ca_certificate: k8s-ca.crt\nk8s_ssl_verify_certificate: true"
         volumeMounts:
         - mountPath: /host/var/run/docker.sock

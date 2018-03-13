@@ -1,0 +1,14 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: sdc-fakeagent-server
+  namespace: sysdigcloud
+  labels:
+    name: sdc-backup-server
+spec:
+  containers:
+    - name: sdc-fakeagent-server
+      image: yofti/ubuntu:1.0
+      imagePullPolicy: Always
+      command: [ "/bin/bash", "-c", "--" ]
+      args: [ "while true; do sleep 30; done;" ]

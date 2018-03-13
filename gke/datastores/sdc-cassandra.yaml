@@ -11,6 +11,8 @@ spec:
   ports:
     - port: 9042
       name: cql
+    - port: 9160
+      name: thrift
     - port: 7000
       name: intra-node
     - port: 7001
@@ -25,6 +27,7 @@ apiVersion: "apps/v1beta1"
 kind: StatefulSet
 metadata:
   name: sdc-cassandra
+  namespace: sysdigcloud
   labels:
     app: sysdigcloud
     role: cassandra
@@ -40,8 +43,10 @@ spec:
       containers:
       - name: cassandra
         #image: gcr.io/google-samples/cassandra:v12
-        image: cassandra:2.2
-        #imagePullPolicy: Always
+        #image: quay.io/sysdig/cassandra:2.1.15.0
+        image: yofti/cassandra:2.2.11
+        #image: launcher.gcr.io/google/cassandra2
+        imagePullPolicy: Always
         ports:
         - containerPort: 7000
           name: intra-node
@@ -51,13 +56,15 @@ spec:
           name: jmx
         - containerPort: 9042
           name: cql
+        - containerPort: 9160
+          name: thrift
         resources:
-          limits:
-            cpu: "500m"
-            memory: 1Gi
           requests:
-           cpu: "500m"
-           memory: 1Gi
+           cpu: "2000m"
+           memory: 8Gi
+          limits:
+           cpu: "6000m"
+           memory: 18Gi
         securityContext:
           capabilities:
             add:
@@ -67,16 +74,18 @@ spec:
             exec:
               command: ["/bin/sh", "-c", "nodetool drain"]
         env:
-          - name: MAX_HEAP_SIZE
-            value: 512M
-          - name: HEAP_NEWSIZE
-            value: 100M
-          #- name: CASSANDRA_NUM_SEEDS
-          #  value: "2"
           - name: CASSANDRA_SEEDS
             value: "sdc-cassandra-0.sdc-cassandra.sysdigcloud.svc.cluster.local"
+          - name: CASSANDRA_SERVICE
+            value: sdc-cassandra
+          #- name: CASSANDRA_SEED_PROVIDER
+          #  value: "io.k8s.cassandra.KubernetesSeedProvider"
           - name: CASSANDRA_CLUSTER_NAME
             value: "sysdigcloud"
+          - name: CASSANDRA_ENDPOINT_SNITCH
+            value: "GoogleCloudSnitch"
+          - name: CASSANDRA_START_RPC
+            value: "true"
           - name: JVM_EXTRA_OPTS
             valueFrom:
                 configMapKeyRef:
@@ -114,6 +123,9 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /var/lib/cassandra
+
+      imagePullSecrets:
+      - name: sysdigcloud-pull-secret
   # These are converted to volume claims by the controller
   # and mounted at the paths mentioned above.
   # do not use these in production until ssd GCEPersistentDisk or other ssd pd
@@ -124,5 +136,5 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 1Gi
+          storage: 100Gi
       storageClassName: gce-pd

@@ -4,7 +4,7 @@ metadata:
   name: sysdigcloud-pull-secret
   namespace: sysdigcloud
 data:
-  .dockerconfigjson: 
+  .dockerconfigjson: ""
 type: kubernetes.io/dockerconfigjson
 ---
 apiVersion: v1
@@ -14,14 +14,12 @@ metadata:
   namespace: sysdigcloud
 data:
   #License
-  sysdigcloud.license: ""
+  sysdigcloud.license: """
   #endpoints
   elasticsearch.url: http://sdc-elasticsearch
   redis.endpoint: sdc-redis
-  redis.read.endpoint: sdc-redis-slave
   cassandra.endpoint: sdc-cassandra
   mysql.endpoint: sdc-mysql
-  mysql.read.endpoint: sdc-mysql-slave
   collector.endpoint: sdc-collector
   collector.port: "6443"
   api.url: https://sdc-api:443
@@ -35,10 +33,21 @@ data:
   mysql.password: password
   mysql.root.password: password
   #jvm options
-  cassandra.jvm.options: ""
-  elasticsearch.jvm.options: ""
-  sysdigcloud.jvm.options: ""
+  cassandra.jvm.options: "-Xms8g -Xmx8g"
+  elasticsearch.jvm.options: "-Xms4g -Xmx4g"
+  sysdigcloud.jvm.options: "-Xms2g -Xmx6g"
   #Cassandra
+  cassandra.cluster.name: "sysdigcloud"
+  cassandra.resource.request.cpu: "500m"
+  cassandra.resource.request.memory: "2Gi"
+  cassandra.resource.limits.cpu: "2000m"
+  cassandra.resource.limits.memory: "4Gi"
+  cassandra.service: "sdc-cassandra"
+  #cassandra.seeds: "sdc-cassandra-0.sdc-cassandra.sysdigcloud.svc.cluster.local, sdc-cassandra-1.sdc-cassandra.sysdigcloud.svc.cluster.local, sdc-cassandra-2.sdc-cassandra.sysdigcloud.svc.cluster.local "
+  cassandra.seed.provider: "io.k8s.cassandra.KubernetesSeedProvider"
+  cassandra.endpoint.snitch: "EC2Snitch"
+  #cassandra.endpoint.snitch: "GoogleCloudSnitch"
+  cassandra.start.rpc: "true"
   cassandra.secure: "false"
   cassandra.ssl.enabled: "false"
   cassandra.ssl.ciphers: ""
@@ -54,8 +63,9 @@ data:
   smtp.ssl: "false"
   smtp.from.address: ""
   #logging
-  sysdigcloud.logging.stdout: "false"
+  sysdigcloud.logging.stdout: "true"
   #Auth and LDAP
+  sysdigcloud.restrict.password.login: "false"
   sysdigcloud.oauth.allowed.domains.list: ""
   sysdigcloud.google.oauth.client.id: ""
   sysdigcloud.google.oauth.client.secret: ""
@@ -77,10 +87,13 @@ metadata:
   namespace: sysdigcloud
   labels:
     app: sysdigcloud
-    role: sysdigcloud
 data:
-  mysql.endpoint: sysdigcloud-mysql
+  # Required: MySQL endpoint DNS/IP. If MySQL is deployed as a Kubernetes service, 
+  # this will be the service name. If using an external database, put the proper address
+  mysql.endpoint: sdc-mysql
+  # Required: MySQL user
   mysql.user: admin
+  # Required: MySQL password
   mysql.password: password
   mysql.root.password: password
   mysql.replication.user: repluser
@@ -111,10 +124,15 @@ data:
     init-connect='SET NAMES utf8'
     character-set-server = utf8
     log-error  = /var/log/mysql/error.log
+    # Recommended in standard MySQL setup
     sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
+    # Added by Yofti - Jan 8, 2018
+    open_files_limit = 16384
+    max_connections = 100000
+    # Disabling symbolic-links is recommended to prevent assorted security risks
     symbolic-links=0
     # Replicate to slaves
-    log-bin=sdc-mysql-0-bin
+    log-bin=sysdigcloud-mysql-0-bin
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -123,7 +141,6 @@ metadata:
   namespace: sysdigcloud
   labels:
     app: sysdigcloud-mysql-slave
-    role: mysql-slave
 data:
   mysql.endpoint: sdc-mysql
   mysql.user: admin
@@ -157,9 +174,14 @@ data:
     init-connect='SET NAMES utf8'
     character-set-server = utf8
     log-error  = /var/log/mysql/error.log
+    # Recommended in standard MySQL setup
     sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
+    # Added by Yofti - Jan 8, 2018
+    open_files_limit = 16384
+    max_connections = 100000
+    # Disabling symbolic-links is recommended to prevent assorted security risks
     symbolic-links=0
-    # writes from master only
+    # Writes from master only
     super-read-only
 ---
 apiVersion: v1
@@ -173,6 +195,8 @@ metadata:
 data:
   redis.password: ""
   redis.conf: |+
+    tcp-backlog 65536
+    maxclients 30000
     cluster-enabled no
     cluster-require-full-coverage no
     cluster-node-timeout 15000
@@ -192,6 +216,8 @@ metadata:
 data:
   redis.password: ""
   redis.conf: |+
+    tcp-backlog 65536
+    maxclients 30000
     cluster-enabled no 
     cluster-require-full-coverage no
     cluster-node-timeout 15000
@@ -199,5 +225,6 @@ data:
     cluster-migration-barrier 1
     appendonly yes
     protected-mode no
+    slave-serve-stale-data yes
     slaveof sdc-redis-0.sdc-redis.sysdigcloud.svc.cluster.local 6379
 

@@ -42,7 +42,7 @@ spec:
     spec:
       containers:
       - name: redis-cluster
-        image: yofti/redis-cluster:1.1.2
+        image: yofti/redis:4.0.2
         env:
           - name: POD_IP
             valueFrom:
@@ -95,4 +95,4 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 1Gi
+          storage: 5Gi

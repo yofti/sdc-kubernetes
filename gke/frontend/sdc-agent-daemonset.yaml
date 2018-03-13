@@ -45,21 +45,21 @@ spec:
          privileged: true
         env:
         - name: ACCESS_KEY                                  #REQUIRED - replace with your Sysdig Cloud access key
-          value: d83ca891-d67a-4be8-b359-3986cdc0fdc1
+          value: efac419c-655f-438a-8156-d65339878fc8
 #        - name: RUN_MODE                                   #OPTIONAL - driverless mode (limited functionality. No kernel module. Minimum agent version 0.51.0)
 #          value: "nodriver" 
         - name: COLLECTOR_PORT                             #OPTIONAL - on-prem install only
           value: "6443"
         - name: TAGS                                       #OPTIONAL
-          value: linux:coreos,cloud:aws,cluster:yofti-aws-multi-az-k8s,backend:658 
+          value: linux:ubuntu-16.04,cloud:gke,cluster:gke_sysdig-disney_us-west1-a_sysdig-disney-qa,backend:776 
         - name: COLLECTOR                                  #OPTIONAL - on-prem install only
-          value: sysdigcloud-collector.yoftilabs.com
+          value: 35.230.77.70
         - name: SECURE                                     #OPTIONAL - on-prem install only       
           value: "true"
         - name: CHECK_CERTIFICATE                          #OPTIONAL - on-prem install only
           value: "false"
         - name: ADDITIONAL_CONF                            #OPTIONAL pass additional parameters to the agent such as authentication example provided here
-          value: "new_k8s: true"
+          value: "dev_new_k8s: true"
 #          value: "k8s_uri: https://myacct:mypass@localhost:4430\nk8s_ca_certificate: k8s-ca.crt\nk8s_ssl_verify_certificate: true"
         volumeMounts:
         - mountPath: /host/var/run/docker.sock

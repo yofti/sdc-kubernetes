@@ -2,7 +2,7 @@ FROM redis
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get -y update \
   && apt-get -y upgrade && apt-get install -y gcc make
-RUN apt-get -y install wget zlib1g-dev libssl-dev libreadline-dev libgdbm-dev openssl iputils-ping telnet net-tools dnsutils
+RUN apt-get -y install wget zlib1g-dev libssl-dev libreadline-dev libgdbm-dev openssl iputils-ping telnet net-tools dnsutils htop atop iotop curl netcat && apt-get -y clean 
 
 RUN set -x; mkdir RUBY; \
 cd RUBY;  \
@@ -16,8 +16,11 @@ make install
 RUN gem install bundler \
   && gem install redis 
 
- RUN apt-get -y remove gcc make  && apt-get -y autoremove \
-  && apt-get -y clean
+RUN apt-get -y remove gcc make  && apt-get -y autoremove && apt-get -y clean
 RUN wget -O /usr/local/bin/redis-trib http://download.redis.io/redis-stable/src/redis-trib.rb
 RUN chmod 755 /usr/local/bin/redis-trib
+
+COPY limits.conf /etc/security/limits.conf
+COPY sysctl.conf /etc/sysctl.conf 
+
 CMD redis-server

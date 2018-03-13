@@ -26,7 +26,7 @@ metadata:
     app: sysdigcloud
 spec:
   serviceName: sdc-elasticsearch
-  replicas: 3
+  replicas: 6
   selector:
     matchLabels:
       app: sysdigcloud
@@ -36,25 +36,42 @@ spec:
         app: sysdigcloud
         role: elasticsearch
     spec:
+      initContainers:
+      - name: sysctl
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
+        securityContext:
+          privileged: true
       containers:
-        - image: elasticsearch:5.5
-          name: elasticsearch
-          # https://www.elastic.co/blog/bootstrap_checks_annoying_instead_of_devastating
-          # Elasticsearch team decided to force everybody to run ES5 with the following sysctl option:
-          # sysctl -w vm.max_map_count=262144
-          # If you choose to run the container in privileged mode the container will automatically configured the system
-          # parameter and start elasticsearch as elasticsearch user.
-          # if you choose to run the container not in privileged mode make sure to configure the vm.max_map_count
-          # on all the servers of your cluster
+        - name: elasticsearch
+          #image: quay.io/sysdig/elasticsearch:5.1.1
+          image: yofti/elasticsearch:6.1.1
+          imagePullPolicy: Always
           securityContext:
-            privileged: true
+            capabilities:
+              add:
+                - IPC_LOCK  
+                - SYS_RESOURCE  
           env:
             - name: ELASTICSEARCH_SERVICE
-              value: sysdigcloud-elasticsearch
-            - name: ELASTICSEARCH_GOSSIP_NODES_NUM
-              value: "2"
+              value: sdc-elasticsearch
             - name: ELASTICSEARCH_CLUSTER_NAME
               value: sysdigcloud
+            - name: ELASTICSEARCH_MINIMUM_MASTER_NODES
+              value: "4"
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
             - name: ES_JAVA_OPTS
               valueFrom:
                 configMapKeyRef:
@@ -73,4 +90,4 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 5Gi
+          storage: 15Gi

@@ -1,0 +1,231 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sysdigcloud-pull-secret
+  namespace: sysdigcloud
+data:
+  .dockerconfigjson: "ewogICJhdXRocyI6IHsKICAgICJxdWF5LmlvIjogewogICAgICAiYXV0aCI6ICJjM2x6WkdsbkszbHZablJwWDIxaGEyOXVibVZ1T2pWRVJrOUpPRGhPUkZoVVdFdFpSVFJRUWpsRVNUSklUalV4TVVkQlZGTklXVlF5UkVZNU9GTk1WbE5GUVRRek5GWllWVXBSVFZaWlRsRkNORmM1VkZVPSIsCiAgICAgICJlbWFpbCI6ICIiCiAgICB9CiAgfQp9"
+type: kubernetes.io/dockerconfigjson
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sysdigcloud-config
+  namespace: sysdigcloud
+data:
+  #License
+  #sysdigcloud.license: "347708ca4ec5f7b7cde805ac3c84fa34f35f23eb15a5c1fb7383dd67c90d024901178c4a8a25a7cab6ccad6687e2f0ccecb1efc83a9273bdb1c2bd5801b76ccf0ea6e005f35e9099bae6b8f7db9ce49201446d5093fe1f280c2213724bcf6073d57a8c532e2af29467354a94c96cbf401b79e3a42631d8ef281233f8eae158ca113e4d89c8d12bff79846a228164552797c425462c8a7380b6fdcd134bfb564af766473c12d09888ee22bee54dcd810b"
+  #sysdigcloud.license: "a5a12b82f00c191d31631feef92d376d20d54882d3cbbaa3bd28281b28e1cc11f455d17dd894049cf4e15d3a34890cc71b5b9ce6ad0a7c68725e6753238d9bec302fa19029debcfe3f935742037677aded120acd42595abe1a7626b801cb9d6cffa9d9be6117ca9632c251691847fd79d765d0fbb16ce47ec7523198c2c63a04a2a261835abdd7312533819387986df8"
+  sysdigcloud.license: "58945591e7864e5da1bcc403cc1a9e9b6fc311b186df29b655913e693e51fdb93152fe356068aa57dc399dafbbd0130f404a337780f4221131342645247cee8808ac1163911c12927b3885405330d49177b2213159b93d94724823e7aabb81b024dfe95eedbf46c3a8f2be3965c7b822983d87c8a7bf81951328b22af32e08eb64662f18d93d524a9d5f7b6d8846ba83"
+  #endpoints
+  elasticsearch.url: http://sdc-elasticsearch
+  redis.endpoint: sdc-redis
+  cassandra.endpoint: sdc-cassandra
+  mysql.endpoint: sdc-mysql
+  collector.endpoint: sdc-collector
+  collector.port: "6443"
+  api.url: https://sdc-api:443
+  #passwords
+  sysdigcloud.default.user: test@sysdig.com
+  sysdigcloud.default.user.password: test
+  cassandra.user: ""
+  cassandra.password: ""
+  redis.password: ""
+  mysql.user: admin
+  mysql.password: password
+  mysql.root.password: password
+  #jvm options
+  cassandra.jvm.options: "-Xms8g -Xmx8g"
+  elasticsearch.jvm.options: "-Xms4g -Xmx4g"
+  sysdigcloud.jvm.options: "-Xms2g -Xmx6g"
+  #Cassandra
+  cassandra.cluster.name: "sysdigcloud"
+  cassandra.resource.request.cpu: "500m"
+  cassandra.resource.request.memory: "2Gi"
+  cassandra.resource.limits.cpu: "2000m"
+  cassandra.resource.limits.memory: "4Gi"
+  cassandra.service: "sdc-cassandra"
+  #cassandra.seeds: "sdc-cassandra-0.sdc-cassandra.sysdigcloud.svc.cluster.local, sdc-cassandra-1.sdc-cassandra.sysdigcloud.svc.cluster.local, sdc-cassandra-2.sdc-cassandra.sysdigcloud.svc.cluster.local "
+  cassandra.seed.provider: "io.k8s.cassandra.KubernetesSeedProvider"
+  cassandra.endpoint.snitch: "GoogleCloudSnitch"
+  cassandra.start.rpc: "true"
+  cassandra.secure: "false"
+  cassandra.ssl.enabled: "false"
+  cassandra.ssl.ciphers: ""
+  cassandra.port: "9042"
+  cassandra.replication.factor: "3"
+  sysdigcloud.captures.cassandra.storage: "true"
+  #smtp
+  smtp.server: ""
+  smtp.server.port: "25"
+  smtp.user: ""
+  smtp.password: ""
+  smtp.tls: "false"
+  smtp.ssl: "false"
+  smtp.from.address: ""
+  #logging
+  sysdigcloud.logging.stdout: "true"
+  #Auth and LDAP
+  sysdigcloud.restrict.password.login: "false"
+  sysdigcloud.oauth.allowed.domains.list: ""
+  sysdigcloud.google.oauth.client.id: ""
+  sysdigcloud.google.oauth.client.secret: ""
+  sysdigcloud.ldap.enabled: "false"
+  sysdigcloud.ldap.endpoint: ""
+  sysdigcloud.ldap.manager.dn: ""
+  sysdigcloud.ldap.manager.password: ""
+  sysdigcloud.ldap.root.dn: ""
+  sysdigcloud.ldap.user.search.base: ""
+  sysdigcloud.ldap.user.search.filter: ""
+  sysdigcloud.ldap.group.search.base: ""
+  sysdigcloud.ldap.group.search.filter: ""
+  sysdigcloud.ldap.group.membership.filter: ""
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sysdigcloud-mysql-config
+  namespace: sysdigcloud
+  labels:
+    app: sysdigcloud
+data:
+  # Required: MySQL endpoint DNS/IP. If MySQL is deployed as a Kubernetes service, 
+  # this will be the service name. If using an external database, put the proper address
+  mysql.endpoint: sdc-mysql
+  # Required: MySQL user
+  mysql.user: admin
+  # Required: MySQL password
+  mysql.password: password
+  mysql.root.password: password
+  mysql.replication.user: repluser
+  mysql.replication.password: password
+  master.cnf: |-
+    [client]
+    port   = 3306
+    socket   = /var/run/mysqld/mysqld.sock
+    default-character-set=utf8
+
+    [mysql]
+    default-character-set=utf8
+    [mysqld_safe]
+    pid-file = /var/run/mysqld/mysqld.pid
+    socket   = /var/run/mysqld/mysqld.sock
+    nice   = 0
+    [mysqld]
+    user   = mysql
+    pid-file = /var/run/mysqld/mysqld.pid
+    socket   = /var/run/mysqld/mysqld.sock
+    port   = 3306
+    basedir    = /usr
+    datadir    = /var/lib/mysql
+    tmpdir   = /tmp
+    lc-messages-dir  = /usr/share/mysql
+    explicit_defaults_for_timestamp
+    collation-server = utf8_unicode_ci
+    init-connect='SET NAMES utf8'
+    character-set-server = utf8
+    log-error  = /var/log/mysql/error.log
+    # Recommended in standard MySQL setup
+    sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
+    # Added by Yofti - Jan 8, 2018
+    open_files_limit = 16384
+    max_connections = 100000
+    # Disabling symbolic-links is recommended to prevent assorted security risks
+    symbolic-links=0
+    # Replicate to slaves
+    log-bin=sysdigcloud-mysql-0-bin
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sysdigcloud-mysql-config-slave
+  namespace: sysdigcloud
+  labels:
+    app: sysdigcloud-mysql-slave
+data:
+  mysql.endpoint: sdc-mysql
+  mysql.user: admin
+  mysql.password: password
+  mysql.root.password: password
+  mysql.replication.user: repluser
+  mysql.replication.password: password
+  slave.cnf: |-
+    [client]
+    port   = 3306
+    socket   = /var/run/mysqld/mysqld.sock
+    default-character-set=utf8
+
+    [mysql]
+    default-character-set=utf8
+    [mysqld_safe]
+    pid-file = /var/run/mysqld/mysqld.pid
+    socket   = /var/run/mysqld/mysqld.sock
+    nice   = 0
+    [mysqld]
+    user   = mysql
+    pid-file = /var/run/mysqld/mysqld.pid
+    socket   = /var/run/mysqld/mysqld.sock
+    port   = 3306
+    basedir    = /usr
+    datadir    = /var/lib/mysql
+    tmpdir   = /tmp
+    lc-messages-dir  = /usr/share/mysql
+    explicit_defaults_for_timestamp
+    collation-server = utf8_unicode_ci
+    init-connect='SET NAMES utf8'
+    character-set-server = utf8
+    log-error  = /var/log/mysql/error.log
+    # Recommended in standard MySQL setup
+    sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
+    # Added by Yofti - Jan 8, 2018
+    open_files_limit = 16384
+    max_connections = 100000
+    # Disabling symbolic-links is recommended to prevent assorted security risks
+    symbolic-links=0
+    # Writes from master only
+    super-read-only
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sysdigcloud-redis-config
+  namespace: sysdigcloud
+  labels:
+    app: sysdigcloud
+    role: redis
+data:
+  redis.password: ""
+  redis.conf: |+
+    tcp-backlog 65536
+    maxclients 30000
+    cluster-enabled no
+    cluster-require-full-coverage no
+    cluster-node-timeout 15000
+    cluster-config-file /data/nodes.conf
+    cluster-migration-barrier 1
+    appendonly yes
+    protected-mode no
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sysdigcloud-redis-config-slave
+  namespace: sysdigcloud
+  labels:
+    app: sysdigcloud
+    role: redis-slave
+data:
+  redis.password: ""
+  redis.conf: |+
+    tcp-backlog 65536
+    maxclients 30000
+    cluster-enabled no 
+    cluster-require-full-coverage no
+    cluster-node-timeout 15000
+    cluster-config-file /data/nodes.conf
+    cluster-migration-barrier 1
+    appendonly yes
+    protected-mode no
+    slave-serve-stale-data yes
+    slaveof sdc-redis-0.sdc-redis.sysdigcloud.svc.cluster.local 6379
+

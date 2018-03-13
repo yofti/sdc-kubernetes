@@ -42,7 +42,8 @@ spec:
     spec:
       containers:
       - name: redis-cluster
-        image: yofti/redis-cluster:1.1.2
+        #image: yofti/redis-cluster:1.1.2
+        image: yofti/redis:4.0.2
         env:
           - name: POD_IP
             valueFrom:
@@ -91,8 +92,8 @@ spec:
   - metadata:
       name: data
     spec:
-      storageClassName: aws-gp2-multi-az
+      storageClassName: aws-blazing-mutli-az
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 2Gi
+          storage: 30Gi

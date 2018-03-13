@@ -11,6 +11,8 @@ spec:
   ports:
     - port: 9042
       name: cql
+    - port: 9160
+      name: thrift
     - port: 7000
       name: intra-node
     - port: 7001
@@ -41,8 +43,10 @@ spec:
       containers:
       - name: cassandra
         #image: gcr.io/google-samples/cassandra:v12
-        image: quay.io/sysdig/cassandra:2.1.15.0
-        #imagePullPolicy: Always
+        #image: quay.io/sysdig/cassandra:2.1.15.0
+        image: yofti/cassandra:2.2.11
+        #image: launcher.gcr.io/google/cassandra2
+        imagePullPolicy: Always
         ports:
         - containerPort: 7000
           name: intra-node
@@ -52,13 +56,15 @@ spec:
           name: jmx
         - containerPort: 9042
           name: cql
+        - containerPort: 9160
+          name: thrift
         resources:
           limits:
-            cpu: "500m"
-            memory: 2Gi
+            cpu: "6000m"
+            memory: 18Gi
           requests:
-           cpu: "500m"
-           memory: 2Gi
+           cpu: "2000m"
+           memory: 8Gi
         securityContext:
           capabilities:
             add:
@@ -70,8 +76,16 @@ spec:
         env:
           - name: CASSANDRA_SEEDS
             value: "sdc-cassandra-0.sdc-cassandra.sysdigcloud.svc.cluster.local"
+          - name: CASSANDRA_SERVICE
+            value: sdc-cassandra
+          #- name: CASSANDRA_SEED_PROVIDER
+          #  value: "io.k8s.cassandra.KubernetesSeedProvider"
           - name: CASSANDRA_CLUSTER_NAME
             value: "sysdigcloud"
+          - name: CASSANDRA_ENDPOINT_SNITCH
+            value: "GoogleCloudSnitch"
+          - name: CASSANDRA_START_RPC
+            value: "true"
           - name: JVM_EXTRA_OPTS
             valueFrom:
                 configMapKeyRef:
@@ -122,5 +136,5 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 10Gi
+          storage: 30Gi
       storageClassName: gce-pd

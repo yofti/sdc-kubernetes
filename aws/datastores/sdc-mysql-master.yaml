@@ -163,8 +163,8 @@ spec:
   - metadata:
       name: data
     spec:
-      storageClassName: aws-gp2-multi-az
+      storageClassName: aws-blazing-mutli-az
       accessModes: ["ReadWriteOnce"]
       resources:
         requests:
-          storage: 2Gi
+          storage: 30Gi

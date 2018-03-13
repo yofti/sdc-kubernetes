@@ -4,7 +4,7 @@ metadata:
   name: sdc-worker
   namespace: sysdigcloud
 spec:
-  replicas: 1
+  replicas: 6
   template:
     metadata:
       labels:
@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: worker
-          image: quay.io/sysdig/sysdigcloud-backend:637
+          image: quay.io/sysdig/sysdigcloud-backend:718
           volumeMounts:
             - name: logs
               mountPath: /var/log/sysdigcloud
@@ -27,6 +27,13 @@ spec:
             # Uncomment this if you want to split sysdgicloud configurations into configs and secrets.
             #- name: secrets
             #  mountPath: /opt/kubernets_secrets
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: 3Gi
+            limits:
+              cpu: "3000m"
+              memory: 6Gi                   
           env:
             - name: ROLES
               value: worker

@@ -1,28 +1,10 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: sdc-api
-  namespace: sysdigcloud
-  labels:
-    app: sysdigcloud
-    role: api
-spec:
-  type: LoadBalancer
-  ports:
-    - port: 443
-      name: secure-api
-      targetPort: 443
-  selector:
-    app: sysdigcloud
-    role: api
----
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: sdc-api
   namespace: sysdigcloud
 spec:
-  replicas: 1
+  replicas: 6
   template:
     metadata:
       labels:
@@ -31,7 +13,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: quay.io/sysdig/sysdigcloud-backend:637
+          image: quay.io/sysdig/sysdigcloud-backend:718
           volumeMounts:
             - name: logs
               mountPath: /var/log/sysdigcloud
@@ -45,6 +27,13 @@ spec:
             # Uncomment this if you want to split sysdgicloud configurations into configs and secrets.
             #- name: secrets
             #  mountPath: /opt/kubernets_secrets
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: 3Gi
+            limits:
+              cpu: "2000m"
+              memory: 5Gi
           env:
             - name: ROLES
               value: api
