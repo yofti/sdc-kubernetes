@@ -5,8 +5,8 @@ LOG_FILE=logs/install/uninstall-$(date "+%Y.%m.%d-%H.%M.%S").log
 QUAY_FILE="etc/licenses/quay.uri"
 LICENSE_FILE="etc/licenses/license.uri"
 CONFIG_FILE="etc/sdc-config.yaml"
-CLOUD_PROVIDER="aws"
-BACKEND_VERSION="776"
+CLOUD_PROVIDER="GKE"
+BACKEND_VERSION="780"
 FRONTEND_VERSION="0.78.0"
 
 error_exit()
@@ -71,8 +71,7 @@ kubectl delete  -f backend/sdc-api.yaml >> $LOG_FILE 2>&1 &
 kubectl delete  -f backend/sdc-collector.yaml  >> $LOG_FILE 2>&1 &
 kubectl delete  -f backend/sdc-worker.yaml >> $LOG_FILE 2>&1 &
 
-kubectl delete -f datastores/sdc-mysql-master.yaml  >> $LOG_FILE 2>&1 &
-kubectl delete -f datastores/sdc-mysql-slaves.yaml  >> $LOG_FILE 2>&1 &
+kubectl create -f datastores/sdc-mysql-proxy.yaml >> $LOG_FILE 2>&1 &
 kubectl delete -f datastores/sdc-redis-master.yaml  >> $LOG_FILE 2>&1 &
 kubectl delete -f datastores/sdc-redis-slaves.yaml  >> $LOG_FILE 2>&1 &
 kubectl delete -f datastores/sdc-cassandra.yaml     >> $LOG_FILE 2>&1 &

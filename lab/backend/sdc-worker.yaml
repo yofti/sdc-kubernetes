@@ -4,7 +4,7 @@ metadata:
   name: sdc-worker
   namespace: sysdigcloud
 spec:
-  replicas: 6
+  replicas: 1
   template:
     metadata:
       labels:
@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: worker
-          image: quay.io/sysdig/sysdigcloud-backend:718
+          image: quay.io/sysdig/sysdigcloud-backend:800
           volumeMounts:
             - name: logs
               mountPath: /var/log/sysdigcloud
