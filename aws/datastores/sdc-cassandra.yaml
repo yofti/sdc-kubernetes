@@ -114,7 +114,7 @@ spec:
             command:
             - /bin/bash
             - -c
-            - echo
+            - nodetool status | egrep $(hostname -i) | egrep UN 
           initialDelaySeconds: 15
           timeoutSeconds: 5
         # These volume mounts are persistent. They are like inline claims,

@@ -5,8 +5,8 @@ QUAY_FILE="etc/licenses/quay.uri"
 LICENSE_FILE="etc/licenses/license.uri"
 CONFIG_FILE="etc/sdc-config.yaml"
 CLOUD_PROVIDER="AWS"
-BACKEND_VERSION="780"
-FRONTEND_VERSION="0.78.0"
+BACKEND_VERSION="800"
+FRONTEND_VERSION="0.78.1"
 
 error_exit()
 {
@@ -150,7 +150,13 @@ sed -i .bak "s/sysdigcloud.license: \"${license_key}\"/sysdigcloud.license: \"\"
 
 rm ${CONFIG_FILE}.bak 
 
-#
+#CloudSQL Credentials 
+kubectl create secret generic cloudsql-instance-credentials \
+    --from-file=credentials.json=etc/sysdig-disney-5a8e9c8c16ad.json -n sysdigcloud
+
+kubectl create secret generic cloudsql-db-credentials \
+     --from-literal=username=proxyuser --from-literal=password=jcHcDOFMbvFt70ef -n sysdigcloud
+
 #kubectl create -f etc/sdc-rbac.yaml  | tee -a $LOG_FILE
 kubectl create -f datastores/sdc-mysql-master.yaml  | tee -a $LOG_FILE
 kubectl create -f datastores/sdc-redis-master.yaml | tee -a $LOG_FILE
@@ -158,6 +164,7 @@ kubectl create -f datastores/sdc-redis-slaves.yaml | tee -a $LOG_FILE
 kubectl create -f datastores/sdc-cassandra.yaml  | tee -a $LOG_FILE
 kubectl create -f datastores/sdc-elasticsearch.yaml | tee -a $LOG_FILE
 kubectl create -f datastores/sdc-mysql-slaves.yaml | tee -a $LOG_FILE
+
 #
 echo "... sleeping 60 before starting backend. " | tee -a $LOG_FILE
 sleep 60

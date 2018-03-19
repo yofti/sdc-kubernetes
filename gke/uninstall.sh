@@ -5,9 +5,9 @@ LOG_FILE=logs/install/uninstall-$(date "+%Y.%m.%d-%H.%M.%S").log
 QUAY_FILE="etc/licenses/quay.uri"
 LICENSE_FILE="etc/licenses/license.uri"
 CONFIG_FILE="etc/sdc-config.yaml"
-CLOUD_PROVIDER="aws"
-BACKEND_VERSION="776"
-FRONTEND_VERSION="0.78.0"
+CLOUD_PROVIDER="GKE"
+BACKEND_VERSION="800"
+FRONTEND_VERSION="0.78.1"
 
 error_exit()
 {

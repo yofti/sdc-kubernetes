@@ -34,7 +34,7 @@ Here is a list of the highlights:
   etc/sdc-config.yaml holds every configurable parameter.
 - **Addition of rudimentary install.sh and uninstall.sh scripts.**
 - **Support for Multi Availability Zone (multi AZ) deployments**
-	As long as the underlying Kubernetes is deployed in Multi-AZ mode, we can run on it.
+	As long as the underlying Kubernetes is deployed in Multi-AZ mode, we can run on it. 
 
 Some lowlights and TODOs:
 
@@ -42,8 +42,6 @@ Some lowlights and TODOs:
 	Switch to Kubernetes secret. Easy to do. Need backend help. They need to request for a different variable from configMap. P.S. Look in the install.sh under the lab directory to see how secrets are configured for Google CloudSQL.
 - **Redis cluster support**
 	File a feature request for dev to support clustered redis. Seems like an easy code fix. We can get rid of the master/slave redis setup and go for a full cluster
-- **Support Galera Active/Active**
-	We're using Percona master/slave replication. We could easily go active/active on mysql.
 - **AWS snitch for Cassandra**
 	Yes, we can run on a multi-AZ k8s cluster. But our Cassandra is not really aware of it. It uses the 'simple' snitch. We could have Cassandra racks distributed accross zones.
 - **Support non-cloud deployments**
@@ -85,10 +83,7 @@ Datastores (redis, mysql, elasticsearch and cassandra) are stateful. They are co
 
 1. Clone this repository to your machine
 	`git clone https://github.com/yofti/sdc-kubernetes`
-2. Edit the file *etc/sdc-config.yaml*
-	* On line 7, find the entry *.dockerconfigjson*. Add your quay.io secret.
-	* On line 17, find the entry *sysdigcloud.license*. Add the contents of your license (uri) file. 
-	* All configurable parameters for this applications are in this file. Edit what you see fit.
+2. Put your sysdig license and quay key in `etc/licenses/`. Name the files `license.uri` and `quay.uri` respectively.
 3. `cd aws` or `cd gke` depending on your cloud provider.
 4. Run ./install.sh
 

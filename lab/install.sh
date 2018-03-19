@@ -5,8 +5,8 @@ QUAY_FILE="etc/licenses/quay.uri"
 LICENSE_FILE="etc/licenses/license.uri"
 CONFIG_FILE="etc/sdc-config.yaml"
 CLOUD_PROVIDER="GKE"
-BACKEND_VERSION="780"
-FRONTEND_VERSION="0.78.0"
+BACKEND_VERSION="800"
+FRONTEND_VERSION="0.78.1"
 
 error_exit()
 {

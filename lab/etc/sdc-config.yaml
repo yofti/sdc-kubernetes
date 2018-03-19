@@ -33,15 +33,12 @@ data:
   mysql.password: jcHcDOFMbvFt70ef
   mysql.root.password: jcHcDOFMbvFt70ef
   #jvm options
-  cassandra.jvm.options: "-Xms8g -Xmx8g"
+  cassandra.jvm.options: "-Xms2g -Xmx8g"
   elasticsearch.jvm.options: "-Xms2g -Xmx2g"
   sysdigcloud.jvm.options: "-Xms2g -Xmx4g"
+
   #Cassandra
   cassandra.cluster.name: "sysdigcloud"
-  cassandra.resource.request.cpu: "500m"
-  cassandra.resource.request.memory: "2Gi"
-  cassandra.resource.limits.cpu: "2000m"
-  cassandra.resource.limits.memory: "4Gi"
   cassandra.service: "sdc-cassandra"
   #cassandra.seeds: "sdc-cassandra-0.sdc-cassandra.sysdigcloud.svc.cluster.local, sdc-cassandra-1.sdc-cassandra.sysdigcloud.svc.cluster.local, sdc-cassandra-2.sdc-cassandra.sysdigcloud.svc.cluster.local "
   cassandra.seed.provider: "io.k8s.cassandra.KubernetesSeedProvider"

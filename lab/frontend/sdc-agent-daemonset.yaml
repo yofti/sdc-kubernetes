@@ -46,15 +46,15 @@ spec:
          privileged: true
         env:
         - name: ACCESS_KEY                                  #REQUIRED - replace with your Sysdig Cloud access key
-          value: d687ae0b-9de8-4968-9f80-e9b91304c92c
+          value: 7bc5587c-975b-473e-b864-659bac0502e3
 #        - name: RUN_MODE                                   #OPTIONAL - driverless mode (limited functionality. No kernel module. Minimum agent version 0.51.0)
 #          value: "nodriver" 
         - name: COLLECTOR_PORT                             #OPTIONAL - on-prem install only
           value: "6443"
         - name: TAGS                                       #OPTIONAL
-          value: linux:ubuntu-16.04,cloud:gke,k8sversion:1.7.8,project:sysdig-disney-prod,backend:702,frontend:0.75.0,owner:Yofti
+          value: linux:ubuntu-16.04,cloud:gke,k8sversion:1.9.3-gke0,project:sysdig-disney-prod,backend:800,frontend:0.78.0,owner:Yofti
         - name: COLLECTOR                                  #OPTIONAL - on-prem install only
-          value: 35.227.153.35
+          value: 35.230.120.77
         - name: SECURE                                     #OPTIONAL - on-prem install only       
           value: "true"
         - name: CHECK_CERTIFICATE                          #OPTIONAL - on-prem install only
